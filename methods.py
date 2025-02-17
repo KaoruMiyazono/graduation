@@ -126,13 +126,15 @@ class WiSR(Algorithm):
         return x.view(*sizes)
 
     def update(self, minibatches, unlabeled=None):
-        all_x = torch.cat([x for x, y in minibatches])
-        all_y = torch.cat([y for x, y in minibatches])
+        # all_x = torch.cat([x for x, y in minibatches])
+        all_x = minibatches[0]
+        # all_y = torch.cat([y for x, y in minibatches])
+        all_y = minibatches[1]
         all_d = torch.cat([
             torch.full((x.shape[0],), i, dtype=torch.int64, device="cuda")
             for i, (x, y) in enumerate(minibatches)
         ])
-
+        # print(all_x.shape)
         # learn gesture feature
         self.optimizer_f.zero_grad()
         self.optimizer_g.zero_grad()

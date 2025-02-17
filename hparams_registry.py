@@ -19,7 +19,9 @@ def _hparams(algorithm, dataset, random_state):
     hparams["rmsprop_alpha"]=(0.99, 10 ** random_state.uniform(-6, -2))
 
     hparams['nonlinear_classifier']=( False,False)
-
+    hparams["mlp_width"]=(256,256)
+    hparams["mlp_depth"]=(3,3)
+    hparams["mlp_dropout"]=(0.1,0.1)
 
     hparams["freeze_bn"] = (True, True)
     hparams["pretrained"] = (True, True)  # only for ResNet
