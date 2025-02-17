@@ -37,7 +37,7 @@ class CSIIterDataset(torch.utils.data.IterableDataset):
             dataset_dir=dataset_dir+"/CSI/"
             amp,pha,labels,roomid,userid,locid,oriid=get_widar_csi(dataset_dir,domain) #(n, 3, 30, 2500)
         elif args.csidataset=='CSIDA': 
-            dataset_dir=dataset_dir+"/CSI_301/"
+            dataset_dir=dataset_dir+"/dataset/" #这个是我改的
             amp,pha,labels,roomid,userid,locid,oriid=get_CSIDA_csi(dataset_dir,domain)#(n, 3, 114, 1800)
         elif args.csidataset=='ARIL': #'Widar3/CSI/'   
             dataset_dir=dataset_dir+"/"
@@ -57,6 +57,12 @@ class CSIIterDataset(torch.utils.data.IterableDataset):
         data=data.reshape(data.shape[0],data.shape[1]*data.shape[2],data.shape[3]) #(n, 180, 2500)
 
         return data,labels
+    def __iter__(self):
+        """
+        生成器函数，使得 dataset 可迭代 自己加的
+        """
+        for i in range(len(self.data)):
+            yield self.data[i], int(self.labels[i])
 
     def __getitem__(self, index: int):
         """
@@ -93,8 +99,7 @@ class MultipleEnvironmentCSI(MultipleDomainDataset):
                 x=torch.tensor(x, dtype=torch.float)#torch.from_numpy(data)#浅拷贝，共享内存空间
                 y=torch.tensor(y)
                 d=torch.tensor(d)
-                self.datasets.append(dataset_transform(x,y,d))
-
+                self.datasets.append(dataset_transform(x,y,d)) #列表里面每一个都是一个iterdataset 对应的是一个domain的
         self.input_shape = dataset_csi_size[args.csidataset][args.data_type]
         self.num_classes = num_classes
 

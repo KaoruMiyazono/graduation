@@ -10,12 +10,17 @@ import torch.utils.data
 
 from datasets import get_dataset
 from methods import WiSR
+from methods_me import Baseline
 from evaluator import Evaluator
 from lib import misc
 from lib.fast_data_loader import InfiniteDataLoader, FastDataLoader
+from torch.utils.data import DataLoader, ConcatDataset
 
 
-
+def infinite_dataloader(dataloader):
+    while True:
+        for batch in dataloader:
+            yield batch
 def json_handler(v):
     if isinstance(v, (Path, range)):
         return str(v)
@@ -29,6 +34,15 @@ def train(target_env, args, hparams, n_steps, checkpoint_freq, logger):
         device = "cpu"
     
     logger.info("")
+
+    #######################################################
+    # 防止warning
+    ######################################################
+    # import torch.backends.cudnn as cudnn
+    # cudnn.benchmark = False
+    # cudnn.deterministic = True
+    # torch.backends.cudnn.allow_tf32 = False 
+    # torch.backends.cuda.matmul.allow_tf32 = False
 
 
     #######################################################
@@ -44,7 +58,7 @@ def train(target_env, args, hparams, n_steps, checkpoint_freq, logger):
     n_traindata_env=[]    
     n_testdata_env=[]
     for env in train_dataset:
-        n_traindata_env.append(len(env[0]))
+        n_traindata_env.append(len(env[0])) #算每个domain的样本个数
     for env in test_dataset:
         n_testdata_env.append(len(env[0]))
     len_train_data = sum(n_traindata_env)
@@ -55,15 +69,40 @@ def train(target_env, args, hparams, n_steps, checkpoint_freq, logger):
 
     logger.info(f"Batch size: {batch_size} ")
 
+    combined_dataset = ConcatDataset([env for env, _ in train_dataset])
+    env_weights=None
+    train_loaders = DataLoader(
+        dataset=combined_dataset,
+        batch_size=batch_size,
+        num_workers=dataset.N_WORKERS,
+        shuffle=True,  # 如果需要随机采样
+        drop_last=True
+    )
+    train_minibatches_iterator = infinite_dataloader(train_loaders)
+
+    combined_dataset_test = ConcatDataset([env for env, _ in test_dataset])
+    test_loaders = DataLoader(
+        dataset=combined_dataset_test,
+        batch_size=batch_size,
+        num_workers=dataset.N_WORKERS,
+        shuffle=True,  # 如果需要随机采样
+        drop_last=True
+    )
+        
+    test_minibatches_iterator = infinite_dataloader(test_loaders)
     
+    # train_minibatches_iterator = zip(*train_loaders)
     
-    # dataloaders
-    train_loaders = [InfiniteDataLoader(
-            dataset=env,
-            weights=env_weights,
-            batch_size=batch_size,
-            num_workers=dataset.N_WORKERS)
-            for env, env_weights in train_dataset]
+    # dataloaders 锁死
+    ################这里修改了##############
+    # train_loaders = [InfiniteDataLoader(
+    #         dataset=env,
+    #         weights=env_weights,
+    #         batch_size=batch_size,
+    #         num_workers=dataset.N_WORKERS)
+    #         for env, env_weights in train_dataset]
+    # train_minibatches_iterator = zip(*train_loaders)
+    ################这里修改了##############
     
     eval_loaders = [FastDataLoader(
             dataset=env,
@@ -72,12 +111,13 @@ def train(target_env, args, hparams, n_steps, checkpoint_freq, logger):
             for env, _ in test_dataset]
 
 
-    train_minibatches_iterator = zip(*train_loaders)
-
+    
+    # print(train_loaders)
     
     eval_loader_names = ["target_env{}".format(i) for i in range(len(test_dataset))]
     eval_meta = list(zip(eval_loader_names, eval_loaders, [None]*len(test_dataset)))
-    
+    # print(eval_loaders)
+    # print(eval_meta)
     evaluator = Evaluator(
         test_envs,
         eval_meta,
@@ -91,7 +131,14 @@ def train(target_env, args, hparams, n_steps, checkpoint_freq, logger):
     #######################################################
     # setup algorithm (model)
     #######################################################
-    algorithm = WiSR(
+    # algorithm = WiSR(
+    #     dataset.input_shape,
+    #     dataset.num_classes,
+    #     len(train_dataset),
+    #     hparams,
+    # )
+
+    algorithm = Baseline(
         dataset.input_shape,
         dataset.num_classes,
         len(train_dataset),
@@ -121,11 +168,19 @@ def train(target_env, args, hparams, n_steps, checkpoint_freq, logger):
         step_start_time = time.time()
         epoch = step / steps_per_epoch
 
-        minibatches_device = [
-                (x.to(device), y.to(device)) for ((x, y, d),idx) in next(train_minibatches_iterator)
-            ]
+        # minibatches_device = [
+        #         (x.to(device), y.to(device)) for ((x, y, d),idx) in next(train_minibatches_iterator)
+        #     ]
 
-        step_vals = algorithm.update(minibatches_device)
+        sample = next(train_minibatches_iterator)
+        (x,y,d),idx=sample
+        minibatches_device = [x.to(device), y.to(device)]
+
+        sample_test=next(test_minibatches_iterator)
+        (x_test,_,_),idx=sample_test
+        # print("到了")
+        # exit(0)
+        step_vals = algorithm.update(minibatches_device,x_test.to(device))
         
 
         checkpoint_vals['step_time'].append(time.time() - step_start_time)

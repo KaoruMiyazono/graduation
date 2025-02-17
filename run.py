@@ -22,7 +22,7 @@ from trainer import train
 
 def get_args():
     parser = argparse.ArgumentParser(description='Domain generalization')
-    parser.add_argument('--data_dir', type=str,default="/root/Downloads/5fd37bc2531f4132b0f5aeb8610414da/datasets/")#"/mnt/ssd1/LiuSJ/")#
+    parser.add_argument('--data_dir', type=str,default="/home/zhengzhiyong/Wifi/dataset/")#"/mnt/ssd1/LiuSJ/")#
     parser.add_argument('--dataset', type=str, default='CSI')
     parser.add_argument('--csidataset', type=str, default='CSIDA')#'Widar3'#'CSIDA',#'ARIL'
     parser.add_argument('--algorithm', type=str, default="WiSR")
@@ -46,10 +46,10 @@ def get_args():
     return args
 
 def main(args,left_argv):
-    os.makedirs(args.output_dir, exist_ok=True)
+    os.makedirs(args.output_dir, exist_ok=True) #找到 打印log的文件夹
 
     # miro path setup
-    args.out_dir = Path(args.output_dir )
+    args.out_dir = Path(args.output_dir)
     args.out_dir.mkdir(exist_ok=True, parents=True)
 
     logger = Logger.get(args.out_dir / "log.txt")
@@ -124,6 +124,7 @@ def main(args,left_argv):
         logger=logger,
     )
     write_result_to_txt(args,results)
+    return results[2]
 
 
 
@@ -152,11 +153,14 @@ if __name__ == "__main__":
     imax=500
 
     args,left_argv=get_args()
-
+    acc_all,cnt=0.0,0
     dataset_domain_list=get_domains(args.csidataset,domain_type,ibegin,imax,rxs=None)
     for i in range(len(dataset_domain_list[args.csidataset])):
         args.source_domains=dataset_domain_list[args.csidataset][i]['source_domains']
         args.target_domains=dataset_domain_list[args.csidataset][i]['target_domains']
 
-        main(args,left_argv)
-    
+        acc_all=acc_all+main(args,left_argv)
+        cnt=cnt+1
+    print(acc_all)
+    print(cnt)
+    print(acc_all/cnt)

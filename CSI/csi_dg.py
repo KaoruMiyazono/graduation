@@ -118,8 +118,11 @@ def get_CSIDA_csi(root_dir,domain_name): #room_1_user_3_loc_2
         
     data_file=root_dir+'room_'+str(roomid)+'_loc_'+str(locid)+'_user_'+str(userid)+'_CSIDA_amp.pkl'
     if not os.path.isfile(data_file):
+        # print(Path(root_dir))
         group = zarr.open_group(Path(root_dir).as_posix(), mode="r")
         all_csi = group.csi_data_raw[:]#(2844, 1800, 3, 114)
+        # all_amp = np.abs(all_csi)
+        # all_pha=np.angle(all_csi)
         all_amp = group.csi_data_amp[:]#(2844, 1800, 3, 114)
         all_pha = group.csi_data_pha[:]
         all_gesture = group.csi_label_act[:]  # 0~5
@@ -128,9 +131,10 @@ def get_CSIDA_csi(root_dir,domain_name): #room_1_user_3_loc_2
         user_label = group.csi_label_user[:]  # 0,1,2,3,4
         
         index=np.array(range(all_gesture.shape[0]))
-        select=index[np.where(room_label==roomid)]
-        select=select[np.where(user_label==userid)]
-        select=select[np.where(loc_label==locid)]
+        # select=index[np.where(room_label==roomid)]
+        # select=select[np.where(user_label==userid)]
+        # select=select[np.where(loc_label==locid)]
+        select = index[(room_label == roomid) & (user_label == userid) & (loc_label == locid)] #这里是我改的 
 
         all_sel_amp=all_amp[select]
         all_sel_pha=all_pha[select]
@@ -144,18 +148,18 @@ def get_CSIDA_csi(root_dir,domain_name): #room_1_user_3_loc_2
         all_sel_pha=all_sel_pha.transpose(0,2,3,1)#(n, 3, 114, 1800)
         all_sel_csi=all_sel_csi.transpose(0,2,3,1)
 
-        f=open(root_dir+'room_'+str(roomid)+'_loc_'+str(locid)+'_user'+str(userid)+'_CSIDA_amp.pkl','wb')
-        pickle.dump(all_sel_amp,f)
-        f.close()
-        f=open(root_dir+'room_'+str(roomid)+'_loc_'+str(locid)+'_user'+str(userid)+'_CSIDA_pha.pkl','wb')
-        pickle.dump(all_sel_pha,f)
-        f.close()
-        f=open(root_dir+'user'+str(userid)+'_CSIDA_label.pkl','wb')
-        pickle.dump(all_sel_gesture,f)
-        pickle.dump(all_sel_room_label,f)
-        pickle.dump(all_sel_loc_label,f)
-        pickle.dump(all_sel_user_label,f)
-        f.close()
+        # f=open(root_dir+'room_'+str(roomid)+'_loc_'+str(locid)+'_user'+str(userid)+'_CSIDA_amp.pkl','wb') #这里改了
+        # pickle.dump(all_sel_amp,f) 
+        # f.close()
+        # f=open(root_dir+'room_'+str(roomid)+'_loc_'+str(locid)+'_user'+str(userid)+'_CSIDA_pha.pkl','wb')
+        # pickle.dump(all_sel_pha,f)
+        # f.close()
+        # f=open(root_dir+'user'+str(userid)+'_CSIDA_label.pkl','wb')
+        # pickle.dump(all_sel_gesture,f)
+        # pickle.dump(all_sel_room_label,f)
+        # pickle.dump(all_sel_loc_label,f)
+        # pickle.dump(all_sel_user_label,f)
+        # f.close()
     else:  
         f=open(root_dir+'room_'+str(roomid)+'_loc_'+str(locid)+'_user_'+str(userid)+'_CSIDA_amp.pkl','rb')
         print('extracting:',root_dir+'room_'+str(roomid)+'_loc_'+str(locid)+'_user_'+str(userid)+'_CSIDA_amp.pkl')
