@@ -20,7 +20,7 @@ def high_freq_mutate_1d_with_fs(amp_src, amp_trg, fs=1000, cutoff_freq=10):
     amp_src[..., cutoff_bin:] = amp_trg[..., cutoff_bin:]
     return amp_src
 
-def FDA_1d_with_fs(src_signal, trg_signal, fs=1000, cutoff_freq=10):
+def FDA_1d_with_fs(src_signal, trg_signal, fs=1000, cutoff_freq=70):
     # 输入形状: (B, C, T)
     src = src_signal
     trg = trg_signal
@@ -34,13 +34,14 @@ def FDA_1d_with_fs(src_signal, trg_signal, fs=1000, cutoff_freq=10):
     
     # 分解幅度和相位
     amp_src, pha_src = torch.abs(fft_src), torch.angle(fft_src)
-    amp_trg = torch.abs(fft_trg)
+    amp_trg,pha_trg = torch.abs(fft_trg),torch.angle(fft_trg)
     
     # 使用物理频率进行低频替换
-    amp_src_mutated = high_freq_mutate_1d_with_fs(amp_src, amp_trg, fs=fs, cutoff_freq=cutoff_freq)
+    # amp_src_mutated = high_freq_mutate_1d_with_fs(amp_src, amp_trg, fs=fs, cutoff_freq=cutoff_freq)
+    pha_src_mutated = high_freq_mutate_1d_with_fs(pha_src, pha_trg, fs=fs, cutoff_freq=cutoff_freq)
     
     # 重建信号
-    fft_mixed = torch.polar(amp_src_mutated, pha_src)
+    fft_mixed = torch.polar(amp_src, pha_src_mutated)
     mixed = torch.fft.irfft(fft_mixed, n=src.size(-1), dim=-1, norm='forward')
     
     return mixed.to(src_signal.dtype)

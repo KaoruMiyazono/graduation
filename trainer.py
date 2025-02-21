@@ -198,7 +198,8 @@ def train(target_env, args, hparams, n_steps, checkpoint_freq, logger):
             for key, val in checkpoint_vals.items():
                 results[key] = np.mean(val)
 
-            accuracies, summaries = evaluator.evaluate(algorithm)
+            accuracies, summaries,losses = evaluator.evaluate(algorithm)
+            print(accuracies["target_env0"],losses["target_env0"])
             if accuracies["target_env0"]>best_test_acc:
                 best_test_acc = accuracies["target_env0"]
             
