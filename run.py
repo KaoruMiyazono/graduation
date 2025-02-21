@@ -129,7 +129,7 @@ def main(args,left_argv):
 
 
 if __name__ == "__main__":
-    domain_type='user'
+    domain_type='room'
     '''
     {
         'CSIDA':[

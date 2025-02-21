@@ -225,7 +225,7 @@ plot_selected_spectrograms(
     antennas=antennas_to_plot,  # 指定天线
     subcarriers=subcarriers_to_plot,  # 指定子载波
     noverlap=128,       # 重叠 128 样本
-    freq_lim=500,       # 频率轴显示范围 0~500 Hz
+    freq_lim=400,       # 频率轴显示范围 0~500 Hz
     cmap='jet',         # 颜色映射
     save_path="selected_spectrograms.png",  # 保存路径
     f=f,                # 频率轴数据

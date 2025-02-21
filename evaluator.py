@@ -80,7 +80,7 @@ class Evaluator:
         """When len(test_envs) == 2, you can specify target env for computing exact test acc."""
         self.test_envs = [target_env]
 
-    def evaluate(self, algorithm, ret_losses=False):
+    def evaluate(self, algorithm, ret_losses=True):
         n_train_envs = len(self.train_envs)
         n_test_envs = len(self.test_envs)
         assert n_test_envs == 1
