@@ -5,7 +5,7 @@ import torch.nn.functional as F
 from lib.fast_data_loader import FastDataLoader
 
 if torch.cuda.is_available():
-    device = "cuda:1"
+    device = "cuda:0"
 else:
     device = "cpu"
 
