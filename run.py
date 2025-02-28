@@ -10,7 +10,7 @@ import PIL
 import torch
 import torchvision
 import torch.utils.data
-
+import ast
 from datasets import datasets
 import hparams_registry
 from lib import misc
@@ -19,7 +19,7 @@ from pathlib import Path
 from lib.utils import write_result_to_txt
 from lib.logger import Logger
 from trainer import train
-
+# AxC*T 每个天线单独做 最小化相似度 cos 
 def get_args():
     parser = argparse.ArgumentParser(description='Domain generalization')
     parser.add_argument('--data_dir', type=str,default="/home/zhengzhiyong/Wifi/dataset/")#"/mnt/ssd1/LiuSJ/")#
@@ -27,19 +27,23 @@ def get_args():
     parser.add_argument('--csidataset', type=str, default='CSIDA')#'Widar3'#'CSIDA',#'ARIL'
     parser.add_argument('--algorithm', type=str, default="WiSR")
     parser.add_argument('--seed', type=int, default=0)
-    parser.add_argument('--steps', type=int, default=100)
+    parser.add_argument('--steps', type=int, default=200)
     parser.add_argument('--checkpoint_freq', type=int, default=1 )
     parser.add_argument('--output_dir', type=str, default="./train_output/")
-    parser.add_argument('--results_file', type=str, default="test_results.txt")
+    parser.add_argument('--results_file', type=str, default="test_results_cuda1.txt")
     parser.add_argument("--evalmode",default="fast",help="[fast, all]. if fast, ignore train_in datasets in evaluation time.",)
     parser.add_argument("--debug", action="store_true", help="Run w/ debug mode")
-    parser.add_argument("--model_save", default=200, type=int, help="Model save start step")
+    parser.add_argument("--model_save", default=300, type=int, help="Model save start step")
 
     parser.add_argument('--data_type', type=str, default="amp+pha")
     parser.add_argument('--source_domains', type=str, default=None)
     parser.add_argument('--target_domains', type=str, default=None)
     parser.add_argument('--batch_size', type=int, default=32)
     parser.add_argument('--backbone', type=str, default="CSIResNet")
+
+
+    #这个是我加上的
+    parser.add_argument("--FDA_hp", default=[(300,400),(300,1000),(400,1000)], type=ast.literal_eval, help="test bandwith in FDA")
 
     args = parser.parse_known_args()
 
@@ -52,7 +56,7 @@ def main(args,left_argv):
     args.out_dir = Path(args.output_dir)
     args.out_dir.mkdir(exist_ok=True, parents=True)
 
-    logger = Logger.get(args.out_dir / "log.txt")
+    logger = Logger.get(args.out_dir / "log_cuda1.txt")
     cmd = " ".join(sys.argv)
     logger.info(f"Command :: {cmd}")
 
@@ -70,7 +74,7 @@ def main(args,left_argv):
         logger.nofmt("\t{}: {}".format(k, v))
 
 
-
+    
     # setup hparams
     #miro
     hparams = hparams_registry.default_hparams(args.algorithm, args.dataset)
@@ -129,7 +133,7 @@ def main(args,left_argv):
 
 
 if __name__ == "__main__":
-    domain_type='room'
+    domain_type='user'
     '''
     {
         'CSIDA':[
@@ -152,15 +156,27 @@ if __name__ == "__main__":
     ibegin=0
     imax=500
 
-    args,left_argv=get_args()
-    acc_all,cnt=0.0,0
-    dataset_domain_list=get_domains(args.csidataset,domain_type,ibegin,imax,rxs=None)
-    for i in range(len(dataset_domain_list[args.csidataset])):
-        args.source_domains=dataset_domain_list[args.csidataset][i]['source_domains']
-        args.target_domains=dataset_domain_list[args.csidataset][i]['target_domains']
+    
 
-        acc_all=acc_all+main(args,left_argv)
-        cnt=cnt+1
-    print(acc_all)
-    print(cnt)
-    print(acc_all/cnt)
+    args,left_argv=get_args()
+    
+    
+        
+    dataset_domain_list=get_domains(args.csidataset,domain_type,ibegin,imax,rxs=None)
+    for idx, (low, high) in enumerate(args.FDA_hp):
+        print(f"Range {idx}: ({low}, {high})")
+        setattr(args, 'low', low)
+        setattr(args, 'high', high)
+        acc_all,cnt=0.0,0
+        for i in range(len(dataset_domain_list[args.csidataset])):
+            args.source_domains=dataset_domain_list[args.csidataset][i]['source_domains']
+            args.target_domains=dataset_domain_list[args.csidataset][i]['target_domains']
+
+            acc_all=acc_all+main(args,left_argv)
+            cnt=cnt+1
+        with open("output_linear_cuda1.txt", "a") as f:
+            f.write(f"Range {idx}: ({low}, {high})\n")  # 写入当前的low和high
+            f.write(f"acc_all: {acc_all}\n")
+            f.write(f"cnt: {cnt}\n")
+            f.write(f"acc_all / cnt: {acc_all / cnt}\n")
+            f.write("\n")  # 用于分隔不同的记录

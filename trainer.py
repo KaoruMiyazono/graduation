@@ -29,7 +29,8 @@ def json_handler(v):
 
 def train(target_env, args, hparams, n_steps, checkpoint_freq, logger):
     if torch.cuda.is_available():
-        device = "cuda"
+        # device = "cuda"
+        device="cuda:1"
     else:
         device = "cpu"
     
@@ -180,7 +181,7 @@ def train(target_env, args, hparams, n_steps, checkpoint_freq, logger):
         (x_test,_,_),idx=sample_test
         # print("到了")
         # exit(0)
-        step_vals = algorithm.update(minibatches_device,x_test.to(device))
+        step_vals = algorithm.update(minibatches_device,x_test.to(device),args)
         
 
         checkpoint_vals['step_time'].append(time.time() - step_start_time)
@@ -199,7 +200,7 @@ def train(target_env, args, hparams, n_steps, checkpoint_freq, logger):
                 results[key] = np.mean(val)
 
             accuracies, summaries,losses = evaluator.evaluate(algorithm)
-            print(accuracies["target_env0"],losses["target_env0"])
+            # print(accuracies["target_env0"],losses["target_env0"])
             if accuracies["target_env0"]>best_test_acc:
                 best_test_acc = accuracies["target_env0"]
             

@@ -1,6 +1,27 @@
 
 import torch
-def high_freq_mutate_1d_with_fs(amp_src, amp_trg, fs=1000, cutoff_freq=10):
+
+def bandwidth_freq_mutate_1d_with_fs(src, trg, fs=1000, cutoff_freq_lower=10,cutoff_freq_upper=100):
+    """ 
+    Args:
+        src: 源幅度谱 (B, C, L)
+        trg: 目标幅度谱 
+        fs: 采样频率 (Hz)
+        cutoff_freq: 截止频率 (Hz)
+    """
+    B, C, t = src.shape
+    nyquist = fs / 2  # Nyquist频率
+    total_freq_bins = t  # FFT后的频点总数（rfft的特殊性需处理）
+    # print(B,C,t)
+    # 计算截止频率对应的频点位置
+    cutoff_bin_lower = int( (cutoff_freq_lower / nyquist) * t )  # 只考虑单侧频谱
+    cutoff_bin_upper = int( (cutoff_freq_upper / nyquist) * t )  # 只考虑单侧频谱
+    # print(cutoff_bin)
+    
+    # 替换高频区域（考虑rfft的对称性）
+    src[..., cutoff_bin_lower:cutoff_bin_upper] = trg[..., cutoff_bin_lower:cutoff_bin_upper]
+    return src
+def high_freq_mutate_1d_with_fs(amp_src, amp_trg, fs=1000, cutoff_freq=300):
     """ 使用物理频率控制低频区域
     Args:
         amp_src: 源幅度谱 (B, C, L)
@@ -20,7 +41,7 @@ def high_freq_mutate_1d_with_fs(amp_src, amp_trg, fs=1000, cutoff_freq=10):
     amp_src[..., cutoff_bin:] = amp_trg[..., cutoff_bin:]
     return amp_src
 
-def FDA_1d_with_fs(src_signal, trg_signal, fs=1000, cutoff_freq=70):
+def FDA_1d_with_fs(src_signal, trg_signal, fs=1000, cutoff_freq=300,cutoff_freq_upper=None):
     # 输入形状: (B, C, T)
     src = src_signal
     trg = trg_signal
@@ -36,9 +57,12 @@ def FDA_1d_with_fs(src_signal, trg_signal, fs=1000, cutoff_freq=70):
     amp_src, pha_src = torch.abs(fft_src), torch.angle(fft_src)
     amp_trg,pha_trg = torch.abs(fft_trg),torch.angle(fft_trg)
     
-    # 使用物理频率进行低频替换
+    # 使用物理频率进行高频替换
     # amp_src_mutated = high_freq_mutate_1d_with_fs(amp_src, amp_trg, fs=fs, cutoff_freq=cutoff_freq)
-    pha_src_mutated = high_freq_mutate_1d_with_fs(pha_src, pha_trg, fs=fs, cutoff_freq=cutoff_freq)
+    if cutoff_freq_upper==None:
+        pha_src_mutated = high_freq_mutate_1d_with_fs(pha_src, pha_trg, fs=fs, cutoff_freq=cutoff_freq)
+    else:
+        pha_src_mutated=bandwidth_freq_mutate_1d_with_fs(pha_src, pha_trg,fs=fs,cutoff_freq_lower=cutoff_freq,cutoff_freq_upper=cutoff_freq_upper)
     
     # 重建信号
     fft_mixed = torch.polar(amp_src, pha_src_mutated)
