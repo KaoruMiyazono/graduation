@@ -30,7 +30,7 @@ def json_handler(v):
 def train(target_env, args, hparams, n_steps, checkpoint_freq, logger):
     if torch.cuda.is_available():
         # device = "cuda"
-        device="cuda:1"
+        device="cuda:0"
     else:
         device = "cpu"
     

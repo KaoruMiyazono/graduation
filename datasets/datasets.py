@@ -54,7 +54,7 @@ class CSIIterDataset(torch.utils.data.IterableDataset):
             data=np.concatenate((amp,pha),axis=2)#(n, 3, 60, 2500)
         else:
             raise ValueError('wrong type')
-        data=data.reshape(data.shape[0],data.shape[1]*data.shape[2],data.shape[3]) #(n, 180, 2500)
+        # data=data.reshape(data.shape[0],data.shape[1]*data.shape[2],data.shape[3]) #(n, 180, 2500)
 
         return data,labels
     def __iter__(self):
@@ -106,7 +106,7 @@ class MultipleEnvironmentCSI(MultipleDomainDataset):
             self.antenna=2
         # print(type(dataset_csi_size[args.csidataset][args.data_type]))
         # print(dataset_csi_size[args.csidataset][args.data_type])
-        self.input_shape = dataset_csi_size[args.csidataset][args.data_type]//self.antenna
+        self.input_shape = dataset_csi_size[args.csidataset][args.data_type]
         self.num_classes = num_classes
 
 class CSI(MultipleEnvironmentCSI):

@@ -14,7 +14,7 @@ dataset_csi_size={
             'CSIDA':{
                 'amp':(342, 1800),
                 'pha':(342, 1800),
-                'amp+pha':(684, 1800),
+                'amp+pha':(228, 1800),
                 'img':(225,225),
                 },
             'ARIL':{

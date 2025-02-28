@@ -9,7 +9,7 @@ def bandwidth_freq_mutate_1d_with_fs(src, trg, fs=1000, cutoff_freq_lower=10,cut
         fs: 采样频率 (Hz)
         cutoff_freq: 截止频率 (Hz)
     """
-    B, C, t = src.shape
+    B,A, C, t = src.shape
     nyquist = fs / 2  # Nyquist频率
     total_freq_bins = t  # FFT后的频点总数（rfft的特殊性需处理）
     # print(B,C,t)
@@ -29,7 +29,7 @@ def high_freq_mutate_1d_with_fs(amp_src, amp_trg, fs=1000, cutoff_freq=300):
         fs: 采样频率 (Hz)
         cutoff_freq: 截止频率 (Hz)
     """
-    B, C, t = amp_src.shape
+    B, A,C, t = amp_src.shape
     nyquist = fs / 2  # Nyquist频率
     total_freq_bins = t  # FFT后的频点总数（rfft的特殊性需处理）
     # print(B,C,t)

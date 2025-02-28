@@ -91,8 +91,8 @@ class Baseline(Algorithm):
         # learn gesture feature
         self.optimizer_f.zero_grad()
         self.optimizer_g.zero_grad()
-        print(self.featurizer(all_x_src_to_tar).shape)
-        loss_g = F.cross_entropy(self.forward_g(all_x_src_to_tar), all_y)
+        # print(self.featurizer(all_x_src_to_tar).shape)
+        loss_g = F.cross_entropy(self.forward_g(s_t_a1), all_y)
         loss_g.backward()
         self.optimizer_f.step()
         self.optimizer_g.step()  
@@ -102,15 +102,16 @@ class Baseline(Algorithm):
         }
 
     def predict(self, x):
-        return self.classifier_g(self.featurizer(x))  
+        x_a1,x_a2,x_a3=self.decomse(x)
+        return self.classifier_g(self.featurizer(x_a1))  
 
 
     def decomse(self,x):
 
-        b,c,t=x.shape
-        x=x.reshape(b,3,c//3,t)
-        x_a1,x_a2,x_a3=x[0],x[1],x[2]
-        print(x_a1.shape)
-        exit(0)
+        # b,a,c,t=x.shape
+
+        x_a1,x_a2,x_a3=x[:,0,:,:],x[:,1,:,:],x[:,2:,:,:]
+        # print(x_a1.shape)
+        # exit(0)
         return x_a1,x_a2,x_a3
         

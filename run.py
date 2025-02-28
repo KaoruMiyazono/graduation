@@ -27,7 +27,7 @@ def get_args():
     parser.add_argument('--csidataset', type=str, default='CSIDA')#'Widar3'#'CSIDA',#'ARIL'
     parser.add_argument('--algorithm', type=str, default="WiSR")
     parser.add_argument('--seed', type=int, default=0)
-    parser.add_argument('--steps', type=int, default=200)
+    parser.add_argument('--steps', type=int, default=100)
     parser.add_argument('--checkpoint_freq', type=int, default=1 )
     parser.add_argument('--output_dir', type=str, default="./train_output/")
     parser.add_argument('--results_file', type=str, default="test_results_cuda1.txt")
