@@ -100,7 +100,13 @@ class MultipleEnvironmentCSI(MultipleDomainDataset):
                 y=torch.tensor(y)
                 d=torch.tensor(d)
                 self.datasets.append(dataset_transform(x,y,d)) #列表里面每一个都是一个iterdataset 对应的是一个domain的
-        self.input_shape = dataset_csi_size[args.csidataset][args.data_type]
+        if args.csidataset=='CSIDA':
+            self.antenna=3
+        else:
+            self.antenna=2
+        # print(type(dataset_csi_size[args.csidataset][args.data_type]))
+        # print(dataset_csi_size[args.csidataset][args.data_type])
+        self.input_shape = dataset_csi_size[args.csidataset][args.data_type]//self.antenna
         self.num_classes = num_classes
 
 class CSI(MultipleEnvironmentCSI):

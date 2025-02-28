@@ -71,14 +71,18 @@ class Baseline(Algorithm):
         return self.classifier_g(self.featurizer(x))
 
 
-    def update(self, minibatches,all_x_test,unlabeled=None):
+    def update(self, minibatches,all_x_test,args,unlabeled=None):
         # all_x = torch.cat([x for x, y in minibatches])
         all_x=minibatches[0]
         # all_y = torch.cat([y for x, y in minibatches])
         all_y=minibatches[1]
         
 
-        all_x_src_to_tar=FDA_1d_with_fs(all_x,all_x_test)
+        if args.high==1000:
+            args.high=None
+        
+        all_x_src_to_tar=FDA_1d_with_fs(all_x,all_x_test,fs=1000,cutoff_freq=args.low,cutoff_freq_upper=args.high)
+        s_t_a1,s_t_a2,s_t_a3=self.decomse(all_x_src_to_tar)
         # all_d = torch.cat([
         #     torch.full((x.shape[0],), i, dtype=torch.int64, device="cuda")
         #     for i, (x, y) in enumerate(minibatches)
@@ -87,6 +91,7 @@ class Baseline(Algorithm):
         # learn gesture feature
         self.optimizer_f.zero_grad()
         self.optimizer_g.zero_grad()
+        print(self.featurizer(all_x_src_to_tar).shape)
         loss_g = F.cross_entropy(self.forward_g(all_x_src_to_tar), all_y)
         loss_g.backward()
         self.optimizer_f.step()
@@ -98,3 +103,14 @@ class Baseline(Algorithm):
 
     def predict(self, x):
         return self.classifier_g(self.featurizer(x))  
+
+
+    def decomse(self,x):
+
+        b,c,t=x.shape
+        x=x.reshape(b,3,c//3,t)
+        x_a1,x_a2,x_a3=x[0],x[1],x[2]
+        print(x_a1.shape)
+        exit(0)
+        return x_a1,x_a2,x_a3
+        
