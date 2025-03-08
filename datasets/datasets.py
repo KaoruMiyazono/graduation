@@ -37,7 +37,8 @@ class CSIIterDataset(torch.utils.data.IterableDataset):
             dataset_dir=dataset_dir+"/CSI/"
             amp,pha,labels,roomid,userid,locid,oriid=get_widar_csi(dataset_dir,domain) #(n, 3, 30, 2500)
         elif args.csidataset=='CSIDA': 
-            dataset_dir=dataset_dir+"/dataset/" #这个是我改的
+            dataset_dir=dataset_dir+"/CSI_301" #这个是我改的
+            # print(dataset_dir)
             amp,pha,labels,roomid,userid,locid,oriid=get_CSIDA_csi(dataset_dir,domain)#(n, 3, 114, 1800)
         elif args.csidataset=='ARIL': #'Widar3/CSI/'   
             dataset_dir=dataset_dir+"/"

@@ -9,7 +9,7 @@ def bandwidth_freq_mutate_1d_with_fs(src, trg, fs=1000, cutoff_freq_lower=10,cut
         fs: 采样频率 (Hz)
         cutoff_freq: 截止频率 (Hz)
     """
-    B,A, C, t = src.shape
+    t = src.shape[-1]
     nyquist = fs / 2  # Nyquist频率
     total_freq_bins = t  # FFT后的频点总数（rfft的特殊性需处理）
     # print(B,C,t)
@@ -29,7 +29,7 @@ def high_freq_mutate_1d_with_fs(amp_src, amp_trg, fs=1000, cutoff_freq=300):
         fs: 采样频率 (Hz)
         cutoff_freq: 截止频率 (Hz)
     """
-    B, A,C, t = amp_src.shape
+    t = amp_src.shape[-1]
     nyquist = fs / 2  # Nyquist频率
     total_freq_bins = t  # FFT后的频点总数（rfft的特殊性需处理）
     # print(B,C,t)
@@ -49,9 +49,12 @@ def FDA_1d_with_fs(src_signal, trg_signal, fs=1000, cutoff_freq=300,cutoff_freq_
     # 计算RFFT（实数信号FFT）
     fft_src = torch.fft.rfft(src, dim=-1, norm='forward')  # 输出形状 (B, C, L+1)
     fft_trg = torch.fft.rfft(trg, dim=-1, norm='forward')
+    # print(fft_src.shape)
+
     # rfreqs = torch.fft.rfftfreq(1800, 1/1000)  # 得到非负频率
-    # print(src.shape)
+    # # print(src.shape)
     # print(rfreqs)
+    # exit(0)
     
     # 分解幅度和相位
     amp_src, pha_src = torch.abs(fft_src), torch.angle(fft_src)

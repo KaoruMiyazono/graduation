@@ -120,7 +120,7 @@ def get_CSIDA_csi(root_dir,domain_name): #room_1_user_3_loc_2
     if not os.path.isfile(data_file):
         # print(Path(root_dir))
         group = zarr.open_group(Path(root_dir).as_posix(), mode="r")
-        all_csi = group.csi_data_raw[:]#(2844, 1800, 3, 114)
+        # all_csi = group.csi_data_raw[:]#(2844, 1800, 3, 114)
         # all_amp = np.abs(all_csi)
         # all_pha=np.angle(all_csi)
         all_amp = group.csi_data_amp[:]#(2844, 1800, 3, 114)
@@ -138,7 +138,7 @@ def get_CSIDA_csi(root_dir,domain_name): #room_1_user_3_loc_2
 
         all_sel_amp=all_amp[select]
         all_sel_pha=all_pha[select]
-        all_sel_csi=all_csi[select]
+        # all_sel_csi=all_csi[select]
         all_sel_gesture=all_gesture[select]
         all_sel_room_label=room_label[select]
         all_sel_loc_label=loc_label[select]
@@ -146,7 +146,7 @@ def get_CSIDA_csi(root_dir,domain_name): #room_1_user_3_loc_2
         
         all_sel_amp=all_sel_amp.transpose(0,2,3,1)#(n, 3, 114, 1800)
         all_sel_pha=all_sel_pha.transpose(0,2,3,1)#(n, 3, 114, 1800)
-        all_sel_csi=all_sel_csi.transpose(0,2,3,1)
+        # all_sel_csi=all_sel_csi.transpose(0,2,3,1)
 
         # f=open(root_dir+'room_'+str(roomid)+'_loc_'+str(locid)+'_user'+str(userid)+'_CSIDA_amp.pkl','wb') #这里改了
         # pickle.dump(all_sel_amp,f) 
