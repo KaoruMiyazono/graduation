@@ -1,0 +1,4 @@
+user9: 5 locations, 5 orientations
+user6: 5 locations, 5 orientations
+user8: 5 locations, 5 orientations
+user7: 5 locations, 5 orientations

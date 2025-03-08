@@ -10,7 +10,7 @@ import torch.utils.data
 
 from datasets import get_dataset
 from methods import WiSR
-from methods_me import Baseline
+from methods_me import Baseline,Baseline_with_arc,Baseline_two_attn,Baseline_with_arc_concat
 from evaluator import Evaluator
 from lib import misc
 from lib.fast_data_loader import InfiniteDataLoader, FastDataLoader
@@ -50,7 +50,9 @@ def train(target_env, args, hparams, n_steps, checkpoint_freq, logger):
     # setup dataset & loader
     #######################################################
     test_envs=[target_env]
+    # print("我到了")
     dataset, train_dataset, test_dataset = get_dataset(args, hparams)
+
 
 
     train_envs = args.source_domains
@@ -139,7 +141,38 @@ def train(target_env, args, hparams, n_steps, checkpoint_freq, logger):
     #     hparams,
     # )
 
-    algorithm = Baseline(
+    # algorithm = Baseline(
+    #     dataset.input_shape,
+    #     dataset.num_classes,
+    #     len(train_dataset),
+    #     hparams,
+    # )
+
+    # algorithm = Baseline_two_attn(
+    #     dataset.input_shape,
+    #     dataset.num_classes,
+    #     len(train_dataset),
+    #     hparams,
+    # )
+
+    # algorithm = Baseline_with_arc(
+    #     dataset.input_shape,
+    #     dataset.num_classes,
+    #     len(train_dataset),
+    #     hparams,
+    # )
+
+    # algorithm = Baseline_with_arc_concat(
+    #     dataset.input_shape,
+    #     dataset.num_classes,
+    #     len(train_dataset),
+    #     hparams,
+    # )
+    
+    
+    
+
+    algorithm = Baseline_with_arc(
         dataset.input_shape,
         dataset.num_classes,
         len(train_dataset),

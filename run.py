@@ -20,9 +20,13 @@ from lib.utils import write_result_to_txt
 from lib.logger import Logger
 from trainer import train
 # AxC*T 每个天线单独做 最小化相似度 cos 
+
+# loss 负号+cos
+# 粗略把频段过一下
+# concat 
 def get_args():
     parser = argparse.ArgumentParser(description='Domain generalization')
-    parser.add_argument('--data_dir', type=str,default="/home/zhengzhiyong/Wifi/dataset/")#"/mnt/ssd1/LiuSJ/")#
+    parser.add_argument('--data_dir', type=str,default="/home/zhengzhiyong/WiSR-main/data/")#"/mnt/ssd1/LiuSJ/")#
     parser.add_argument('--dataset', type=str, default='CSI')
     parser.add_argument('--csidataset', type=str, default='CSIDA')#'Widar3'#'CSIDA',#'ARIL'
     parser.add_argument('--algorithm', type=str, default="WiSR")
@@ -33,7 +37,7 @@ def get_args():
     parser.add_argument('--results_file', type=str, default="test_results_cuda1.txt")
     parser.add_argument("--evalmode",default="fast",help="[fast, all]. if fast, ignore train_in datasets in evaluation time.",)
     parser.add_argument("--debug", action="store_true", help="Run w/ debug mode")
-    parser.add_argument("--model_save", default=300, type=int, help="Model save start step")
+    parser.add_argument("--model_save", default=500, type=int, help="Model save start step")
 
     parser.add_argument('--data_type', type=str, default="amp+pha")
     parser.add_argument('--source_domains', type=str, default=None)
@@ -43,7 +47,8 @@ def get_args():
 
 
     #这个是我加上的
-    parser.add_argument("--FDA_hp", default=[(300,400),(300,1000),(400,1000)], type=ast.literal_eval, help="test bandwith in FDA")
+    # parser.add_argument("--FDA_hp", default=[(10,10),(10,50),(10,20),(10,30),(10,40),(10,60),(10,70),(10,80),(10,100),(10,200),(10,300),(10,400),(10,1000)], type=ast.literal_eval, help="test bandwith in FDA")
+    parser.add_argument("--FDA_hp", default=[(10,10)], type=ast.literal_eval, help="test bandwith in FDA")
 
     args = parser.parse_known_args()
 
@@ -94,6 +99,9 @@ def main(args,left_argv):
     random.seed(args.seed)
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
+    # torch.cuda.manual_seed(args.seed)
+    # torch.cuda.manual_seed_all(args.seed)
+    # torch.cuda.manual_seed(args.seed)
 
     dataset=vars(datasets)[args.dataset](args)
 
@@ -133,7 +141,7 @@ def main(args,left_argv):
 
 
 if __name__ == "__main__":
-    domain_type='user'
+    domain_type='room'
     '''
     {
         'CSIDA':[
@@ -163,6 +171,7 @@ if __name__ == "__main__":
     
         
     dataset_domain_list=get_domains(args.csidataset,domain_type,ibegin,imax,rxs=None)
+    
     for idx, (low, high) in enumerate(args.FDA_hp):
         print(f"Range {idx}: ({low}, {high})")
         setattr(args, 'low', low)

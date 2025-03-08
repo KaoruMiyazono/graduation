@@ -6,7 +6,8 @@ import zarr
 from pathlib import Path
 import matplotlib.pyplot as plt
 from scipy.signal import stft
-def plot_amplitude_over_time(amplitude_data, antenna, subcarrier, save_path="amplitude_plot.png"):
+import torch
+def plot_amplitude_over_time(amplitude_data, antenna, subcarrier, save_path="/home/zhengzhiyong/WiSR-main/graduation/picture/amplitude_plot_900.png"):
     """
     绘制固定天线和子载波，振幅随时间变化的图，并将图保存到当前目录。
 
@@ -18,23 +19,25 @@ def plot_amplitude_over_time(amplitude_data, antenna, subcarrier, save_path="amp
     """
     # 提取指定天线和子载波的振幅数据
     time = np.arange(1800)  # 时间轴（单位：ms）
-    amplitude = amplitude_data[:, antenna, subcarrier]  # 获取固定天线和子载波的振幅
+    amplitude = amplitude_data[antenna, subcarrier, :]  # 获取固定天线和子载波的振幅
 
     # 绘制图形
     plt.figure(figsize=(10, 6))
-    plt.plot(time, amplitude, label=f"Antenna {antenna+1}, Subcarrier {subcarrier+1}")
-    plt.xlabel('Time (ms)')
-    plt.ylabel('Amplitude')
-    plt.title(f'Amplitude vs Time for Antenna {antenna+1} and Subcarrier {subcarrier+1}')
-    plt.grid(True)
+    plt.plot(time, amplitude)
+    # plt.xlabel('Time (ms)')
+    # plt.ylabel('Amplitude')
+    # plt.title(f'Amplitude vs Time for Antenna {antenna+1} and Subcarrier {subcarrier+1}')
+    plt.grid(False)
     plt.legend()
-
+    
+    # print(save_path)
+    # print(amplitude.shape)
     # 保存图像到当前目录
     plt.savefig(save_path)
     plt.close()  # 关闭图像，释放内存
 def read_csi_sample(index):
-    root_dir_amp='/home/zhengzhiyong/Wifi/dataset/CSIDA/dataset/csi_data_amp'
-    root_dir_pha='/home/zhengzhiyong/Wifi/dataset/CSIDA/dataset/csi_data_pha'
+    root_dir_amp='/home/zhengzhiyong/WiSR-main/data/CSIDA/CSI_301/csi_data_amp'
+    root_dir_pha='/home/zhengzhiyong/WiSR-main/data/CSIDA/CSI_301/csi_data_pha'
     csi_amp = zarr.open(Path(root_dir_amp).as_posix(), mode="r")
     csi_pha = zarr.open(Path(root_dir_pha).as_posix(), mode="r")
     amp=csi_amp[index]
@@ -43,6 +46,15 @@ def read_csi_sample(index):
     # amplitude = np.abs(Z)
     # pha=np.angle(Z)
     return amp,pha,pha
+
+
+def fourier_transform(signal,fs=1000):
+    t=signal.shape[-1]
+    fft_signal = torch.fft.rfft(torch.from_numpy(signal), dim=-1, norm='forward')
+    print(fft_signal.shape)
+
+    return fft_signal
+
 
 
 
@@ -207,27 +219,107 @@ def plot_selected_spectrograms(stft_data, fs, nperseg, antennas, subcarriers, no
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
     plt.close()
 
-amp,pha,Z=read_csi_sample(400)
-# plot_amplitude_over_time(amp,0,0)
-stft_data,f,t=compute_stft(pha)
-print(stft_data.shape)
-# print(stft_data[:,:,1,100])
-# print(f)
-# print(t)
-antenna, subcarrier=0,20
-# plot_spectrogram(stft_data,1,100,1000,256,128,freq_lim=20,f=f,t=t)
-antennas_to_plot = [0, 1, 2]  # 绘制天线 1、2、3
-subcarriers_to_plot = [0, 20, 40, 60,80,100]  # 绘制子载波 1、11、21、31
-plot_selected_spectrograms(
-    stft_data=stft_data,
-    fs=1000,            # 采样率 1000 Hz
-    nperseg=256,        # 窗口长度 256
-    antennas=antennas_to_plot,  # 指定天线
-    subcarriers=subcarriers_to_plot,  # 指定子载波
-    noverlap=128,       # 重叠 128 样本
-    freq_lim=400,       # 频率轴显示范围 0~500 Hz
-    cmap='jet',         # 颜色映射
-    save_path="selected_spectrograms.png",  # 保存路径
-    f=f,                # 频率轴数据
-    t=t                 # 时间轴数据
-)
+
+
+def plot_amplitude_spectrum(fft_signal, fs=1000,csiindex=400, save_dir="/home/zhengzhiyong/WiSR-main/graduation/picture"):
+    # 计算频率轴
+    n = fft_signal.shape[-1]
+    freqs = np.fft.rfftfreq(1800, d=1/fs)
+
+    # 计算振幅
+    amplitude = np.abs(fft_signal[0,0,:])
+
+    # 绘制振幅谱
+    plt.figure(figsize=(10, 5))
+    plt.plot(freqs, amplitude)
+    plt.title('Amplitude Spectrum')
+    plt.xlabel('Frequency (Hz)')
+    plt.ylabel('Amplitude')
+    plt.grid(False)
+
+    # 保存图像
+    save_path = f"{save_dir}/amplitude_spectrum{csiindex}.png"
+    plt.savefig(save_path)
+    plt.close()  # 关闭图像，释放内存
+    print(f"Amplitude spectrum saved to {save_path}")
+
+def plot_phase_spectrum(fft_signal, fs=1000,csiindex=900, save_dir="/home/zhengzhiyong/WiSR-main/graduation/picture"):
+    # 计算频率轴
+    n = fft_signal.shape[-1]
+    freqs = torch.fft.rfftfreq(1800, d=1/fs)
+
+    # 计算相位
+    phase=fft_signal[0,0,:]
+    # phase = torch.angle(fft_signal[0,0,:])
+    # print(phase.shape)
+    # print(freqs.shape)
+    # 绘制相位谱
+    plt.figure(figsize=(10, 5))
+    plt.plot(freqs, phase)
+    # plt.bar(freqs, phase, width=1.0, align='edge', color='blue', alpha=0.7)
+    plt.title('Phase Spectrum')
+    plt.xlabel('Frequency (Hz)')
+    plt.ylabel('Phase (radians)')
+    plt.grid(False)
+
+    # 保存图像
+    save_path = f"{save_dir}/phase_spectrum{csiindex}.png"
+    plt.savefig(save_path)
+    plt.close()  # 关闭图像，释放内存
+    print(f"Phase spectrum saved to {save_path}")
+
+
+
+
+
+def bandwidth_freq_mutate_1d_with_fs(src, trg, fs=1000, cutoff_freq_lower=60,cutoff_freq_upper=500):
+    t = src.shape[-1]
+    nyquist = fs / 2  # Nyquist频率
+    total_freq_bins = t  # FFT后的频点总数（rfft的特殊性需处理）
+    # print(B,C,t)
+    # 计算截止频率对应的频点位置
+    cutoff_bin_lower = int( (cutoff_freq_lower / nyquist) * t )  # 只考虑单侧频谱
+    cutoff_bin_upper = int( (cutoff_freq_upper / nyquist) * t )  # 只考虑单侧频谱
+    # print(cutoff_bin)
+
+    # 替换高频区域（考虑rfft的对称性）
+    src[..., cutoff_bin_lower:cutoff_bin_upper] = trg[..., cutoff_bin_lower:cutoff_bin_upper]
+    print(src.shape)
+    return src
+
+
+def FDA_1d_with_fs(src_signal, trg_signal, fs=1000, cutoff_freq=60,cutoff_freq_upper=500):
+    # 输入形状: (B, C, T)
+    src = src_signal
+    trg = trg_signal
+    pha_src_mutated=bandwidth_freq_mutate_1d_with_fs(src, trg,fs=fs,cutoff_freq_lower=cutoff_freq,cutoff_freq_upper=cutoff_freq_upper)
+    return pha_src_mutated
+
+amp_400,pha_400,_=read_csi_sample(400)
+amp_500,pha_500,_=read_csi_sample(500)
+t,a,c,=amp_400.shape
+amp_400=amp_400.reshape(a,c,t)
+amp_500=amp_500.reshape(a,c,t)
+
+amp_400_fft=fourier_transform(amp_400)
+amp_500_fft=fourier_transform(amp_500)
+
+amp_400_mix_500=FDA_1d_with_fs(torch.angle(amp_400_fft),torch.angle(amp_500_fft))
+
+
+
+plot_phase_spectrum(amp_400_mix_500,1000,900)
+amp_end=torch.polar(torch.abs(amp_400_fft),amp_400_mix_500)
+mixed = torch.fft.irfft(amp_end,n=1800, dim=-1, norm='forward')
+# print(mixed.shape)
+# print(mixed[0,0,:]==amp_400[0,0,:])
+# print(mixed)
+# print(amp_400)
+
+plot_amplitude_over_time(mixed,1,0,)
+
+
+
+
+
+
