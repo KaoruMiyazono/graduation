@@ -1,0 +1,468 @@
+{
+    "20181109": {
+      "room": 1,
+      "users": {
+        "user1": {
+          "gesture_map": {
+            "Push&Pull": 1,
+            "Sweep": 2,
+            "Clap": 3,
+            "Slide": 4,
+            "Draw-Zigzag(Vertical)": 5,
+            "Draw-N(Vertical)": 6
+          }
+        },
+        "user2": {
+          "gesture_map": {
+            "Push&Pull": 1,
+            "Sweep": 2,
+            "Clap": 3,
+            "Slide": 4,
+            "Draw-Zigzag(Vertical)": 5,
+            "Draw-N(Vertical)": 6
+          }
+        },
+        "user3": {
+          "gesture_map": {
+            "Push&Pull": 1,
+            "Sweep": 2,
+            "Clap": 3,
+            "Slide": 4,
+            "Draw-Zigzag(Vertical)": 5,
+            "Draw-N(Vertical)": 6
+          }
+        }
+      }
+    },
+    "20181112": {
+      "room": 1,
+      "users": {
+        "user1": {
+          "gesture_map": {
+            "Draw-1": 1,
+            "Draw-2": 2,
+            "Draw-3": 3,
+            "Draw-4": 4,
+            "Draw-5": 5,
+            "Draw-6": 6,
+            "Draw-7": 7,
+            "Draw-8": 8,
+            "Draw-9": 9,
+            "Draw-0": 0
+          }
+        },
+        "user2": {
+          "gesture_map": {
+            "Draw-1": 1,
+            "Draw-2": 2,
+            "Draw-3": 3,
+            "Draw-4": 4,
+            "Draw-5": 5,
+            "Draw-6": 6,
+            "Draw-7": 7,
+            "Draw-8": 8,
+            "Draw-9": 9,
+            "Draw-0": 0
+          }
+        }
+      }
+    },
+    "20181115": {
+      "room": 1,
+      "users": {
+        "user1": {
+          "gesture_map": {
+            "Push&Pull": 1,
+            "Sweep": 2,
+            "Clap": 3,
+            "Draw-O(Vertical)": 4,
+            "Draw-Zigzag(Vertical)": 5,
+            "Draw-N(Vertical)": 6
+          }
+        }
+      }
+    },
+    "20181116": {
+      "room": 1,
+      "users": {
+        "user1": {
+          "gesture_map": {
+            "Draw-1": 1,
+            "Draw-2": 2,
+            "Draw-3": 3,
+            "Draw-4": 4,
+            "Draw-5": 5,
+            "Draw-6": 6,
+            "Draw-7": 7,
+            "Draw-8": 8,
+            "Draw-9": 9,
+            "Draw-0": 0
+          }
+        }
+      }
+    },
+    "20181117": {
+      "room": 2,
+      "users": {
+        "user4": {
+          "gesture_map": {
+            "Push&Pull": 1,
+            "Sweep": 2,
+            "Clap": 3,
+            "Draw-O(Vertical)": 4,
+            "Draw-Zigzag(Vertical)": 5,
+            "Draw-N(Vertical)": 6
+          }
+        }
+      }
+    },
+    "20181118": {
+      "room": 2,
+      "users": {
+        "user2": {
+          "gesture_map": {
+            "Push&Pull": 1,
+            "Sweep": 2,
+            "Clap": 3,
+            "Draw-O(Vertical)": 4,
+            "Draw-Zigzag(Vertical)": 5,
+            "Draw-N(Vertical)": 6
+          }
+        },
+        "user3": {
+          "gesture_map": {
+            "Push&Pull": 1,
+            "Sweep": 2,
+            "Clap": 3,
+            "Draw-O(Vertical)": 4,
+            "Draw-Zigzag(Vertical)": 5,
+            "Draw-N(Vertical)": 6
+          }
+        }
+      }
+    },
+    "20181121": {
+      "room": 1,
+      "users": {
+        "user1": {
+          "gesture_map": {
+            "Slide": 1,
+            "Draw-O(Horizontal)": 2,
+            "Draw-Zigzag(Horizontal)": 3,
+            "Draw-N(Horizontal)": 4,
+            "Draw-Triangle(Horizontal)": 5,
+            "Draw-Rectangle(Horizontal)": 6
+          }
+        },
+        "user2": {
+          "gesture_map": {
+            "Slide": 1,
+            "Draw-O(Horizontal)": 2,
+            "Draw-Zigzag(Horizontal)": 3,
+            "Draw-N(Horizontal)": 4,
+            "Draw-Triangle(Horizontal)": 5,
+            "Draw-Rectangle(Horizontal)": 6
+          }
+        },
+        "user3": {
+          "gesture_map": {
+            "Slide": 1,
+            "Draw-O(Horizontal)": 2,
+            "Draw-Zigzag(Horizontal)": 3,
+            "Draw-N(Horizontal)": 4,
+            "Draw-Triangle(Horizontal)": 5,
+            "Draw-Rectangle(Horizontal)": 6
+          }
+        }
+      }
+    },
+    "20181127": {
+      "room": 2,
+      "users": {
+        "user2": {
+          "gesture_map": {
+            "Slide": 1,
+            "Draw-O(Horizontal)": 2,
+            "Draw-Zigzag(Horizontal)": 3,
+            "Draw-N(Horizontal)": 4,
+            "Draw-Triangle(Horizontal)": 5,
+            "Draw-Rectangle(Horizontal)": 6
+          }
+        },
+        "user5": {
+          "gesture_map": {
+            "Slide": 1,
+            "Draw-O(Horizontal)": 2,
+            "Draw-Zigzag(Horizontal)": 3,
+            "Draw-N(Horizontal)": 4,
+            "Draw-Triangle(Horizontal)": 5,
+            "Draw-Rectangle(Horizontal)": 6
+          }
+        }
+      }
+    },
+    "20181128": {
+      "room": 2,
+      "users": {
+        "user6": {
+          "gesture_map": {
+            "Push&Pull": 1,
+            "Sweep": 2,
+            "Clap": 3,
+            "Draw-O(Horizontal)": 4,
+            "Draw-Zigzag(Horizontal)": 5,
+            "Draw-N(Horizontal)": 6
+          }
+        }
+      }
+    },
+    "20181130": {
+      "room": 1,
+      "users": {
+        "user5": {
+          "gesture_map": {
+            "Push&Pull": 1,
+            "Sweep": 2,
+            "Clap": 3,
+            "Slide": 4,
+            "Draw-O(Horizontal)": 5,
+            "Draw-Zigzag(Horizontal)": 6,
+            "Draw-N(Horizontal)": 7,
+            "Draw-Triangle(Horizontal)": 8,
+            "Draw-Rectangle(Horizontal)": 9
+          }
+        },
+        "user10": {
+          "gesture_map": {
+            "Push&Pull": 1,
+            "Sweep": 2,
+            "Clap": 3,
+            "Slide": 4,
+            "Draw-O(Horizontal)": 5,
+            "Draw-Zigzag(Horizontal)": 6,
+            "Draw-N(Horizontal)": 7,
+            "Draw-Triangle(Horizontal)": 8,
+            "Draw-Rectangle(Horizontal)": 9
+          }
+        },
+        "user11": {
+          "gesture_map": {
+            "Push&Pull": 1,
+            "Sweep": 2,
+            "Clap": 3,
+            "Slide": 4,
+            "Draw-O(Horizontal)": 5,
+            "Draw-Zigzag(Horizontal)": 6,
+            "Draw-N(Horizontal)": 7,
+            "Draw-Triangle(Horizontal)": 8,
+            "Draw-Rectangle(Horizontal)": 9
+          }
+        },
+        "user12": {
+          "gesture_map": {
+            "Push&Pull": 1,
+            "Sweep": 2,
+            "Clap": 3,
+            "Slide": 4,
+            "Draw-O(Horizontal)": 5,
+            "Draw-Zigzag(Horizontal)": 6,
+            "Draw-N(Horizontal)": 7,
+            "Draw-Triangle(Horizontal)": 8,
+            "Draw-Rectangle(Horizontal)": 9
+          }
+        },
+        "user13": {
+          "gesture_map": {
+            "Push&Pull": 1,
+            "Sweep": 2,
+            "Clap": 3,
+            "Slide": 4,
+            "Draw-O(Horizontal)": 5,
+            "Draw-Zigzag(Horizontal)": 6,
+            "Draw-N(Horizontal)": 7,
+            "Draw-Triangle(Horizontal)": 8,
+            "Draw-Rectangle(Horizontal)": 9
+          }
+        },
+        "user14": {
+          "gesture_map": {
+            "Push&Pull": 1,
+            "Sweep": 2,
+            "Clap": 3,
+            "Slide": 4,
+            "Draw-O(Horizontal)": 5,
+            "Draw-Zigzag(Horizontal)": 6,
+            "Draw-N(Horizontal)": 7,
+            "Draw-Triangle(Horizontal)": 8,
+            "Draw-Rectangle(Horizontal)": 9
+          }
+        },
+        "user15": {
+          "gesture_map": {
+            "Push&Pull": 1,
+            "Sweep": 2,
+            "Clap": 3,
+            "Slide": 4,
+            "Draw-O(Horizontal)": 5,
+            "Draw-Zigzag(Horizontal)": 6,
+            "Draw-N(Horizontal)": 7,
+            "Draw-Triangle(Horizontal)": 8,
+            "Draw-Rectangle(Horizontal)": 9
+          }
+        },
+        "user16": {
+          "gesture_map": {
+            "Push&Pull": 1,
+            "Sweep": 2,
+            "Clap": 3,
+            "Slide": 4,
+            "Draw-O(Horizontal)": 5,
+            "Draw-Zigzag(Horizontal)": 6,
+            "Draw-N(Horizontal)": 7,
+            "Draw-Triangle(Horizontal)": 8,
+            "Draw-Rectangle(Horizontal)": 9
+          }
+        },
+        "user17": {
+          "gesture_map": {
+            "Push&Pull": 1,
+            "Sweep": 2,
+            "Clap": 3,
+            "Slide": 4,
+            "Draw-O(Horizontal)": 5,
+            "Draw-Zigzag(Horizontal)": 6,
+            "Draw-N(Horizontal)": 7,
+            "Draw-Triangle(Horizontal)": 8,
+            "Draw-Rectangle(Horizontal)": 9
+          }
+        }
+      }
+    },
+    "20181204": {
+      "room": 2,
+      "users": {
+        "user1": {
+          "gesture_map": {
+            "Push&Pull": 1,
+            "Sweep": 2,
+            "Clap": 3,
+            "Slide": 4,
+            "Draw-O(Horizontal)": 5,
+            "Draw-Zigzag(Horizontal)": 6,
+            "Draw-N(Horizontal)": 7,
+            "Draw-Triangle(Horizontal)": 8,
+            "Draw-Rectangle(Horizontal)": 9
+          }
+        }
+      }
+    },
+    "20181205": {
+      "room": 2,
+      "users": {
+        "user2": {
+          "gesture_map": {
+            "Draw-O(Horizontal)": 1,
+            "Draw-Zigzag(Horizontal)": 2,
+            "Draw-N(Horizontal)": 3,
+            "Draw-Triangle(Horizontal)": 4,
+            "Draw-Rectangle(Horizontal)": 5
+          }
+        },
+        "user3": {
+          "gesture_map": {
+            "Slide": 1,
+            "Draw-O(Horizontal)": 2,
+            "Draw-Zigzag(Horizontal)": 3,
+            "Draw-N(Horizontal)": 4,
+            "Draw-Triangle(Horizontal)": 5,
+            "Draw-Rectangle(Horizontal)": 6
+          }
+        }
+      }
+    },
+    "20181208": {
+      "room": 2,
+      "users": {
+        "user2": {
+          "gesture_map": {
+            "Push&Pull": 1,
+            "Sweep": 2,
+            "Clap": 3,
+            "Slide": 4
+          }
+        },
+        "user3": {
+          "gesture_map": {
+            "Push&Pull": 1,
+            "Sweep": 2,
+            "Clap": 3
+          }
+        }
+      }
+    },
+    "20181209": {
+      "room": 2,
+      "users": {
+        "user2": {
+          "gesture_map": {
+            "Push&Pull": 1
+          }
+        },
+        "user6": {
+          "gesture_map": {
+            "Push&Pull": 1,
+            "Sweep": 2,
+            "Clap": 3,
+            "Slide": 4,
+            "Draw-O(Horizontal)": 5,
+            "Draw-Zigzag(Horizontal)": 6
+          }
+        }
+      }
+    },
+    "20181211": {
+      "room": 3,
+      "users": {
+        "user3": {
+          "gesture_map": {
+            "Push&Pull": 1,
+            "Sweep": 2,
+            "Clap": 3,
+            "Slide": 4,
+            "Draw-O(Horizontal)": 5,
+            "Draw-Zigzag(Horizontal)": 6
+          }
+        },
+        "user7": {
+          "gesture_map": {
+            "Push&Pull": 1,
+            "Sweep": 2,
+            "Clap": 3,
+            "Slide": 4,
+            "Draw-O(Horizontal)": 5,
+            "Draw-Zigzag(Horizontal)": 6
+          }
+        },
+        "user8": {
+          "gesture_map": {
+            "Push&Pull": 1,
+            "Sweep": 2,
+            "Clap": 3,
+            "Slide": 4,
+            "Draw-O(Horizontal)": 5,
+            "Draw-Zigzag(Horizontal)": 6
+          }
+        },
+        "user9": {
+          "gesture_map": {
+            "Push&Pull": 1,
+            "Sweep": 2,
+            "Clap": 3,
+            "Slide": 4,
+            "Draw-O(Horizontal)": 5,
+            "Draw-Zigzag(Horizontal)": 6
+          }
+        }
+      }
+    }
+  }

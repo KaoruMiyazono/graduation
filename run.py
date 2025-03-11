@@ -28,16 +28,16 @@ def get_args():
     parser = argparse.ArgumentParser(description='Domain generalization')
     parser.add_argument('--data_dir', type=str,default="/home/zhengzhiyong/WiSR-main/data/")#"/mnt/ssd1/LiuSJ/")#
     parser.add_argument('--dataset', type=str, default='CSI')
-    parser.add_argument('--csidataset', type=str, default='CSIDA')#'Widar3'#'CSIDA',#'ARIL'
+    parser.add_argument('--csidataset', type=str, default='ARIL')#'Widar3'#'CSIDA',#'ARIL'
     parser.add_argument('--algorithm', type=str, default="WiSR")
     parser.add_argument('--seed', type=int, default=0)
-    parser.add_argument('--steps', type=int, default=100)
+    parser.add_argument('--steps', type=int, default=1000)
     parser.add_argument('--checkpoint_freq', type=int, default=1 )
     parser.add_argument('--output_dir', type=str, default="./train_output/")
     parser.add_argument('--results_file', type=str, default="test_results_cuda1.txt")
     parser.add_argument("--evalmode",default="fast",help="[fast, all]. if fast, ignore train_in datasets in evaluation time.",)
     parser.add_argument("--debug", action="store_true", help="Run w/ debug mode")
-    parser.add_argument("--model_save", default=500, type=int, help="Model save start step")
+    parser.add_argument("--model_save", default=5000, type=int, help="Model save start step")
 
     parser.add_argument('--data_type', type=str, default="amp+pha")
     parser.add_argument('--source_domains', type=str, default=None)
@@ -48,7 +48,9 @@ def get_args():
 
     #这个是我加上的
     # parser.add_argument("--FDA_hp", default=[(10,10),(10,50),(10,20),(10,30),(10,40),(10,60),(10,70),(10,80),(10,100),(10,200),(10,300),(10,400),(10,1000)], type=ast.literal_eval, help="test bandwith in FDA")
-    parser.add_argument("--FDA_hp", default=[(10,10)], type=ast.literal_eval, help="test bandwith in FDA")
+    parser.add_argument("--FDA_hp", default=[(10,200),(10,300),(10,400),(30,100),(30,200),(30,300),(30,400),(50,100),(50,200),(50,300),(50,400),(70,100),(70,200),(70,300),(70,400),(90,100),
+                                             (90,200),(90,300),(90,400),(100,200),(100,300),(100,400),(200,300),(200,400),(200,500),(10,500),(30,500),(50,500),(70,500),(90,500),
+                                             (100,500),(300,500),(400,500),(300,400)], type=ast.literal_eval, help="test bandwith in FDA")
 
     args = parser.parse_known_args()
 
@@ -99,7 +101,7 @@ def main(args,left_argv):
     random.seed(args.seed)
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
-    # torch.cuda.manual_seed(args.seed)
+    torch.cuda.manual_seed(args.seed)
     # torch.cuda.manual_seed_all(args.seed)
     # torch.cuda.manual_seed(args.seed)
 

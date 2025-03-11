@@ -20,7 +20,7 @@ dataset_csi_size={
             'ARIL':{
                 'amp':(52, 192),
                 'pha':(52, 192),
-                'amp+pha':(104, 192),
+                'amp+pha':(104, 384),
                 'img':(52,52),
                 },
             'CSI-Finger':{

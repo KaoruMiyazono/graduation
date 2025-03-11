@@ -71,7 +71,7 @@ class Baseline(Algorithm):
         return self.classifier_g(self.featurizer(x))
 
 
-    def update(self, minibatches,all_x_test,args,unlabeled=None):
+    def update(self, minibatches,all_x_test,args):
         # all_x = torch.cat([x for x, y in minibatches])
         all_x=minibatches[0]
         # all_y = torch.cat([y for x, y in minibatches])
@@ -80,7 +80,7 @@ class Baseline(Algorithm):
 
         if args.high==1000:
             args.high=None
-        
+
         all_x_src_to_tar=FDA_1d_with_fs(all_x,all_x_test,fs=1000,cutoff_freq=args.low,cutoff_freq_upper=args.high)
         # s_t_a1,s_t_a2,s_t_a3=self.decomse(all_x_src_to_tar)
         # all_d = torch.cat([

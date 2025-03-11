@@ -141,12 +141,12 @@ def train(target_env, args, hparams, n_steps, checkpoint_freq, logger):
     #     hparams,
     # )
 
-    # algorithm = Baseline(
-    #     dataset.input_shape,
-    #     dataset.num_classes,
-    #     len(train_dataset),
-    #     hparams,
-    # )
+    algorithm = Baseline(
+        dataset.input_shape,
+        dataset.num_classes,
+        len(train_dataset),
+        hparams,
+    )
 
     # algorithm = Baseline_two_attn(
     #     dataset.input_shape,
@@ -172,12 +172,12 @@ def train(target_env, args, hparams, n_steps, checkpoint_freq, logger):
     
     
 
-    algorithm = Baseline_with_arc(
-        dataset.input_shape,
-        dataset.num_classes,
-        len(train_dataset),
-        hparams,
-    )
+    # algorithm = Baseline_with_arc(
+    #     dataset.input_shape,
+    #     dataset.num_classes,
+    #     len(train_dataset),
+    #     hparams,
+    # )
 
     algorithm.to(device)
 
@@ -215,6 +215,7 @@ def train(target_env, args, hparams, n_steps, checkpoint_freq, logger):
         # print("到了")
         # exit(0)
         step_vals = algorithm.update(minibatches_device,x_test.to(device),args)
+        # step_vals = algorithm.update(minibatches_device)
         
 
         checkpoint_vals['step_time'].append(time.time() - step_start_time)

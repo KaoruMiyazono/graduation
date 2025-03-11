@@ -7,7 +7,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 from scipy.signal import stft
 import torch
-def plot_amplitude_over_time(amplitude_data, antenna, subcarrier, save_path="/home/zhengzhiyong/WiSR-main/graduation/picture/amplitude_plot_900.png"):
+def plot_amplitude_over_time(amplitude_data, antenna, subcarrier, save_path="/home/zhengzhiyong/WiSR-main/graduation/picture/amplitude_plot_800.png"):
     """
     绘制固定天线和子载波，振幅随时间变化的图，并将图保存到当前目录。
 
@@ -35,6 +35,36 @@ def plot_amplitude_over_time(amplitude_data, antenna, subcarrier, save_path="/ho
     # 保存图像到当前目录
     plt.savefig(save_path)
     plt.close()  # 关闭图像，释放内存
+
+
+def plot_amplitude_over_time_aril(amplitude_data,  subcarrier, save_path="/home/zhengzhiyong/WiSR-main/graduation/picture/amplitude__aril_pha_plot_900.png"):
+    """
+    绘制固定天线和子载波，振幅随时间变化的图，并将图保存到当前目录。
+
+    参数:
+    amplitude_data: 振幅数据 (shape: 1800, 3, 114)
+    antenna: 选择的天线索引（0、1、2）
+    subcarrier: 选择的子载波索引（0 到 113）
+    save_path: 保存图像的路径（默认保存为当前目录中的 amplitude_plot.png）
+    """
+    # 提取指定天线和子载波的振幅数据
+    time = np.arange(192)  # 时间轴（单位：ms）
+    amplitude = amplitude_data[ subcarrier, :]  # 获取固定天线和子载波的振幅
+
+    # 绘制图形
+    plt.figure(figsize=(10, 6))
+    plt.plot(time, amplitude)
+    # plt.xlabel('Time (ms)')
+    # plt.ylabel('Amplitude')
+    # plt.title(f'Amplitude vs Time for Antenna {antenna+1} and Subcarrier {subcarrier+1}')
+    plt.grid(False)
+    plt.legend()
+    
+    # print(save_path)
+    # print(amplitude.shape)
+    # 保存图像到当前目录
+    plt.savefig(save_path)
+    plt.close()  # 关闭图像，释放内存
 def read_csi_sample(index):
     root_dir_amp='/home/zhengzhiyong/WiSR-main/data/CSIDA/CSI_301/csi_data_amp'
     root_dir_pha='/home/zhengzhiyong/WiSR-main/data/CSIDA/CSI_301/csi_data_pha'
@@ -46,6 +76,17 @@ def read_csi_sample(index):
     # amplitude = np.abs(Z)
     # pha=np.angle(Z)
     return amp,pha,pha
+
+def read_csi_sample_aril(root_dir,index):
+    train_amp_data= scio.loadmat(root_dir+"train_data_split_amp.mat")
+    train_amp=train_amp_data['train_data']
+
+    train_pha_data= scio.loadmat(root_dir+"train_data_split_pha.mat")
+    train_pha=train_pha_data['train_data']
+
+    print(type(train_amp))
+    return train_amp[index],train_pha[index]
+
 
 
 def fourier_transform(signal,fs=1000):
@@ -269,6 +310,31 @@ def plot_phase_spectrum(fft_signal, fs=1000,csiindex=900, save_dir="/home/zhengz
     print(f"Phase spectrum saved to {save_path}")
 
 
+def plot_phase_spectrum_aril(fft_signal, fs=1000,csiindex=400, save_dir="/home/zhengzhiyong/WiSR-main/graduation/picture"):
+    # 计算频率轴
+    n = fft_signal.shape[-1]
+    freqs = torch.fft.rfftfreq(192, d=1/fs)
+
+    # 计算相位
+    phase=fft_signal[29,:]
+    # phase = torch.angle(fft_signal[0,0,:])
+    # print(phase.shape)
+    # print(freqs.shape)
+    # 绘制相位谱
+    plt.figure(figsize=(10, 5))
+    plt.plot(freqs, phase)
+    # plt.bar(freqs, phase, width=1.0, align='edge', color='blue', alpha=0.7)
+    plt.title('Phase Spectrum')
+    plt.xlabel('Frequency (Hz)')
+    plt.ylabel('Phase (radians)')
+    plt.grid(False)
+
+    # 保存图像
+    save_path = f"{save_dir}/phase_spectrum_aril{csiindex}.png"
+    plt.savefig(save_path)
+    plt.close()  # 关闭图像，释放内存
+    print(f"Phase spectrum saved to {save_path}")
+
 
 
 
@@ -295,8 +361,26 @@ def FDA_1d_with_fs(src_signal, trg_signal, fs=1000, cutoff_freq=60,cutoff_freq_u
     pha_src_mutated=bandwidth_freq_mutate_1d_with_fs(src, trg,fs=fs,cutoff_freq_lower=cutoff_freq,cutoff_freq_upper=cutoff_freq_upper)
     return pha_src_mutated
 
+
+root_dir_aril="/home/zhengzhiyong/WiSR-main/data/ARIL/"
 amp_400,pha_400,_=read_csi_sample(400)
-amp_500,pha_500,_=read_csi_sample(500)
+# amp_500,pha_500,_=read_csi_sample(500)
+
+# amp_400,pha_400=read_csi_sample_aril(root_dir_aril,400)
+print(amp_400.shape)
+print(pha_400.shape)
+# amp_400_fft=fourier_transform(amp_400)
+# pha_amp_400_fft=torch.angle(amp_400_fft)
+# print(amp_400_fft)
+# plot_phase_spectrum_aril(pha_amp_400_fft,1000,800)
+# amp_500_fft=fourier_transform(pha_500)
+t,a,c,=pha_400.shape
+pha_400=pha_400.reshape(a,c,t)
+print(pha_400.shape)
+plot_amplitude_over_time(pha_400,0,100)
+
+
+exit(0)
 t,a,c,=amp_400.shape
 amp_400=amp_400.reshape(a,c,t)
 amp_500=amp_500.reshape(a,c,t)

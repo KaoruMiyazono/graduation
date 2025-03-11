@@ -1,6 +1,55 @@
 
 import os 
 import numpy as np
+import json 
+from utils import resample,rename_widar_files,count_files_in_folder,count_files_by_user,count_files_by_user,count_files_by_conditions
+import matplotlib.pyplot as plt
+
+
+gesture_set=['Push&Pull', 'Sweep', 'Clap', 'Slide', 'Draw-O(Horizontal)', 'Draw-Zigzag(Horizontal)']
+def read_json_csi(file):
+#输入文件名字 输出json文件的数据结构形式
+    with open(file, 'r') as file:
+        data = json.load(file)
+        # print(data['20181109']['room'])
+    return data
+
+def get_new_json(data):
+    filtered_data = {}
+    for date, details in data.items():
+        room = details["room"]
+        users = details["users"]
+        
+        # 筛选每个用户的手势映射
+        filtered_users = {}
+        for user, user_data in users.items():
+            gesture_map = user_data["gesture_map"]
+            
+            # 筛选出 gesture_map 中属于 gesture_set 的手势
+            filtered_gesture_map = {
+                gesture: gesture_id
+                for gesture, gesture_id in gesture_map.items()
+                if gesture in gesture_set
+            }
+            
+            # 如果筛选后的 gesture_map 不为空，则保留该用户
+            if filtered_gesture_map:
+                filtered_users[user] = {
+                    "gesture_map": filtered_gesture_map
+                }
+        
+        # 如果筛选后的 users 不为空，则保留该日期
+        if filtered_users:
+            filtered_data[date] = {
+                "room": room,
+                "users": filtered_users
+            }
+    
+    # 将筛选后的数据写入新的 JSON 文件
+    with open('filtered_csi_summary.json', 'w') as file:
+        json.dump(filtered_data, file, indent=4)
+    
+    print("筛选完成，结果已写入 filtered_csi_summary.json")
 
 class Intel:
     """
@@ -14,6 +63,7 @@ class Intel:
         self.ntxnum = ntxnum
         self.pl_len = pl_len    # useless
         self.if_report = if_report #useless 
+        # print(file)
         if not os.path.isfile(file):
             raise Exception("error: file does not exist, Stop!\n")
 
@@ -212,25 +262,14 @@ class Intel:
                 ret[i, :, :, :M] = ret[i, :, :, :M].dot(sm.T.conj())
         return ret
     
-def find_r2_dat_files(root_dir, output_file):
-    # 定义要提取的手势信息
-    gesture_dict = {
-        "20181109": [1,2,3,4],
-        "20181115": [1,2,3],
-        "20181117": [1,2,3],
-        "20181118": [1,2,3],
-        "20181121": [1,2,3],
-        "20181127": [1,2,3],
-        "20181128": [1,2,3,4,5],
-        "20181130": [1,2,3,4,5,6],
-        "20181204": [1,2,3,4,5,6],
-        "20181205": {"user2": [1, 2], "user3": [1,2,3]},
-        "20181208": "all",
-        "20181209": "all",
-        "20181211": "all"
-    }
+def find_r2_dat_files(root_dir, output_file, json_file):
+    # 加载 JSON 文件
+    with open(json_file, 'r') as f:
+        data = json.load(f)
     
+    # 打开输出文件
     with open(output_file, 'w') as f:
+        # 遍历根目录下的所有文件夹
         for folder in sorted(os.listdir(root_dir)):
             if not folder.startswith("2018"):
                 continue  # 仅处理2018开头的文件夹
@@ -239,39 +278,43 @@ def find_r2_dat_files(root_dir, output_file):
             if not os.path.isdir(folder_path):
                 continue
             
-            gesture_filter = None
-            if folder in gesture_dict:
-                gesture_filter = gesture_dict[folder]
+            # 获取该日期对应的手势映射信息
+            if folder in data:
+                gesture_info = data[folder]
             else:
-                continue
+                continue  # 如果日期不在 JSON 中，跳过
             
-            for subdir, _, files in os.walk(folder_path):
-                last_part = os.path.basename(subdir)  # 获取当前子目录名
-                user_id = last_part.split('-')[0]  # 提取 user ID
+            # 遍历子目录和文件
+            for subdir, sss, files in os.walk(folder_path):
+                # 提取用户 ID（假设子目录名为用户 ID）
+                # print(sss)
+                # print(subdir)
+                user_id = os.path.basename(subdir)
                 # print(user_id)
+                # exit(0)
                 
-                # 获取该日期对应的手势列表
-                if isinstance(gesture_filter, dict):  # 针对特定用户
-                    if user_id in gesture_filter:
-                        allowed_gestures = gesture_filter[user_id]
-                    else:
-                        continue
-                elif gesture_filter == "all":
-                    allowed_gestures = "all"
+                # 获取该用户的手势映射
+                if "users" in gesture_info and user_id in gesture_info["users"]:
+                    gesture_map = gesture_info["users"][user_id]["gesture_map"]
+                    # print(gesture_map)
                 else:
-                    allowed_gestures = gesture_filter
+                    continue  # 如果用户不在手势映射中，跳过
                 
+                # 遍历文件
                 for file in files:
-                    if file.endswith("r2.dat"):
+                    # print(file)
+                    if file.endswith("r6.dat"):  # 仅处理 r2.dat 文件
                         parts = file.split('-')
                         if len(parts) < 6:
                             continue  # 确保文件名格式正确
                         
-                        gesture_type = int(parts[1])  # 提取gesture type
-                        
-                        # 过滤符合条件的手势类型
-                        if allowed_gestures == "all" or gesture_type in allowed_gestures:
+                        gesture_type = parts[1]  # 提取 gesture type
+
+                        gesture_type = int(gesture_type)
+                        # 检查手势类型是否在 gesture_map 中
+                        if gesture_type in gesture_map.values():
                             file_path = os.path.join(subdir, file)
+                            print(file_path)
                             f.write(file_path + "\n")
 
 
@@ -319,23 +362,165 @@ def count_locations_orientations(file_path):
 
 
 
+def extract_sample_info(file_path, json_file):
+    """
+    从文件路径和 JSON 文件中提取样本信息，并生成格式化字符串。
+    
+    参数:
+    - file_path: 文件路径（如 `/home/zhengzhiyong/WiSR-main/WIDAR/20181109/user3/user3-4-3-2-4-r2.dat`）。
+    - json_file: JSON 文件路径，包含房间信息。
+    
+    返回:
+    - 格式化字符串（如 `room_1_user_user3_ges_4_loc_3_ori_2_rx_r2`）。
+    """
+    # 从文件路径中提取文件名
+    file_name = os.path.basename(file_path)
+    
+    # 提取用户 ID、手势类型、躯干位置、面部朝向、重复次数和接收器 ID
+    parts = file_name.split('-')
+    if len(parts) < 6:
+        raise ValueError("文件名格式不正确")
+    
+    user = parts[0]  # 用户 ID（如 user3）
+    ges = parts[1]   # 手势类型（如 4）
+    loc = parts[2]   # 躯干位置（如 3）
+    ori = parts[3]   # 面部朝向（如 2）
+    repetation=parts[4]
+    rx = parts[5].split('.')[0]  # 接收器 ID（如 r2）
+    
+    # 从 JSON 文件中提取 room
+    date = file_path.split('/')[-3]  # 提取日期（如 20181109）
+    # print(date)
+    with open(json_file, 'r') as f:
+        data = json.load(f)
+    
+    if date in data:
+        room = data[date]["room"]
+        gesture_map_info=data[date]["users"][user]["gesture_map"]
+
+        gestre_string = next((k for k, v in gesture_map_info.items() if v == int(ges)), None)
+        num_user= int(user[4:])
+
+    else:
+        raise ValueError(f"日期 {date} 不在 JSON 文件中")
+    
+    # 生成格式化字符串
+    formatted_str = f"room_{room}_user_{num_user}_ges_{gestre_string}_loc_{loc}_ori_{ori}_rx_{rx}_re_{repetation}"
+    return formatted_str
+
+def get_csi_and_save_with_numpy(file_path, json_file):
+    string_list = []
+    error_file = []
+    file_map = {}  # 存储 .npy 文件名 -> .dat 文件路径
+    cnt = 0
+
+    with open(file_path, 'r') as f:
+        for line in f:
+            line = line.rstrip()
+
+            widar_data_single = Intel(file=line, nrxnum=3, ntxnum=1, pl_len=0, if_report=True)
+            widar_data_single.read()
+            csi = widar_data_single.get_scaled_csi()
+
+            amp = np.abs(csi[:, :, 0:3, :])  # shape [T,30,3,1]
+            phase = np.angle(csi[:, :, 0:3, :])  # shape [T,30,3,1]
+            record = np.concatenate((amp, phase), axis=-1)  # shape [T,30,3,2]
+
+            time_stamp = widar_data_single.timestamp_low
+            record = resample(record, time_stamp, 2500)
+            record = np.array(record)
+
+            ans = extract_sample_info(line, json_file)
+            save_dir = "/home/zhengzhiyong/WiSR-main/data/widar/r6_noconj"
+            file_name = ans + ".npy"  # 目标 .npy 文件名
+            save_path = os.path.join(save_dir, file_name)
+
+            if os.path.exists(save_path):
+                error_file.append(line)  # 记录重复文件的 .dat 文件路径
+                print(f"有重复: {file_name} 已存在")
+
+                # 记录当前 .npy 文件对应的 .dat 文件路径
+                if file_name in file_map:
+                    old_dat_file = file_map[file_name]
+                    print(f"文件 {file_name} 之前对应的 .dat 文件是: {old_dat_file}")
+                    print(f"文件 {file_name} 现在的 .dat 文件是: {line}")
+
+                    # 追加写入详细错误日志
+                    with open("error.txt", "a") as f:
+                        f.write(f"文件 {file_name} 重复:\n")
+                        f.write(f"  - 之前的 .dat 文件: {old_dat_file}\n")
+                        f.write(f"  - 现在的 .dat 文件: {line}\n\n")
+                else:
+                    file_map[file_name] = line  # 记录新的 .dat 文件路径
+                    with open("error.txt", "a") as f:
+                        f.write(f"文件 {file_name} 重复: {line}\n")
+
+            else:
+                os.makedirs(save_dir, exist_ok=True)
+                np.save(save_path, record)  # 保存数据
+                file_map[file_name] = line  # 记录当前 .dat 文件路径
+            
+            cnt += 1
+            print(f"数组已保存到: {save_path}")
+            print(f"数组大小为：{record.shape}")
+            print(f"已经处理了 {cnt}")
+
+            string_list.append(ans)
+
+    print(f"总共处理了 {len(string_list)} 个文件")
+    print(f"发现 {len(error_file)} 个重复文件")
+    
+
+
+
+
+
+
+
+
 if __name__ == "__main__":
-    # root_directory = "/home/zhengzhiyong/WiSR-main/WIDAR"
+    root_directory = "/home/zhengzhiyong/WiSR-main/WIDAR"
+    filter_json="/home/zhengzhiyong/WiSR-main/graduation/lib/process_widar/filtered_csi_summary.json"
+    # output_dir="/home/zhengzhiyong/WiSR-main/graduation/lib/process_widar/r2_files.txt"
+    output_dir="/home/zhengzhiyong/WiSR-main/graduation/lib/process_widar/r6_files.txt"
+    r2_files="/home/zhengzhiyong/WiSR-main/graduation/lib/process_widar/r2_files.txt"
+    r6_files="/home/zhengzhiyong/WiSR-main/graduation/lib/process_widar/r6_files.txt"
+    npy_r6_no_conj="/home/zhengzhiyong/WiSR-main/data/widar/r6_noconj"
+    npy_r6="/home/zhengzhiyong/WiSR-main/data/widar/r6"
     # output_txt = "r2_files.txt"
     # find_r2_dat_files(root_directory, output_txt)
     # output_txt = "/home/zhengzhiyong/WiSR-main/graduation/lib/r2_files.txt"
-    # user_sample_counts = count_samples(output_txt)
+    # 
     # # 2 3 5 7 8 9
     # for user, count in user_sample_counts.items():
     #     print(f"{user}: {count} samples")
     # print(f"File paths saved to {output_txt}")
 
-    # count_locations_orientations("/home/zhengzhiyong/WiSR-main/graduation/lib/r2_files.txt")
-    widar_data_single=Intel(file="/home/zhengzhiyong/WiSR-main/WIDAR/20181128/user6/user6-3-2-2-1-r2.dat",nrxnum=3, ntxnum=1, pl_len=0, if_report=True)
-    widar_data_single.read()
+    # 
+    # widar_data_single=Intel(file="/home/zhengzhiyong/WiSR-main/WIDAR/20181128/user6/user6-3-2-2-1-r2.dat",nrxnum=3, ntxnum=1, pl_len=0, if_report=True)
+    # widar_data_single.read()
     # print(csi)
-    csi_data=widar_data_single.get_scaled_csi()
-    print(csi_data)
-    print(type(csi_data))
-    print(csi_data.shape)
+    # csi_data=widar_data_single.get_scaled_csi()
+    # print(csi_data)
+    # print(type(csi_data))
+    # print(csi_data.shape)
     # print(type(csi))
+
+    # data=read_json_csi("widar_process.json")
+    # get_new_json(data)
+    # find_r2_dat_files(root_directory,output_dir,filter_json)
+    # count_locations_orientations(r2_files)
+    # user_sample_counts = count_samples(r6_files)
+    # print(user_sample_counts)
+    get_csi_and_save_with_numpy(r6_files,filter_json)
+    # len_list = get_widar_length_distribution(r2_files)
+    # stats = plot_csi_length_distribution(len_list, save_path="csi_length_hist.png")
+
+    # print("统计信息:", stats)
+    # rename_widar_files(npy_r6)
+    # count_files_in_folder(npy_r6_no_conj)
+    # count_files_by_user(npy_r6_no_conj)
+    # count_files_by_user(npy_r6)
+    # count_files_by_conditions(npy_r6_no_conj,'room_1','loc_1','ori_1','3')
+
+    
