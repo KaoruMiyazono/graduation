@@ -12,10 +12,17 @@ fs=2000
 
 
 
-def deal_CSI(csi,IFfilter=True,IFphasani=True,padding_length=None,IFinterp=None,interp_length=None,new_length=None,interp1d_kind='quadratic'):
+def deal_CSI(csi,IFfilter=False,IFphasani=True,padding_length=None,IFinterp=None,interp_length=None,new_length=None,interp1d_kind='quadratic'):
     amp=abs(csi)
+    amp,pha=csi[:,:,:,0],csi[:,:,:,1]
+    csi = amp * np.exp(1j * pha)
+    print(amp.shape)
+    print(pha.shape)
+    print(amp[:,:,0].shape)
+    exit(0)
+
     if IFphasani:
-        pha=pha_sanitization(csi[0,:,:], csi[1,:,:], csi[2,:,:])
+        pha=pha_sanitization(csi[0,:,:], csi[1,:,:], csi[2,:,:]) #天线 subcarry，
     else:
         pha=np.angle(csi)
     

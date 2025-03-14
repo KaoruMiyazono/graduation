@@ -66,9 +66,11 @@ def FDA_1d_with_fs(src_signal, trg_signal, fs=1000, cutoff_freq=300,cutoff_freq_
         pha_src_mutated = high_freq_mutate_1d_with_fs(pha_src, pha_trg, fs=fs, cutoff_freq=cutoff_freq)
     else:
         pha_src_mutated=bandwidth_freq_mutate_1d_with_fs(pha_src, pha_trg,fs=fs,cutoff_freq_lower=cutoff_freq,cutoff_freq_upper=cutoff_freq_upper)
+        # amp_src_mutated=bandwidth_freq_mutate_1d_with_fs(amp_src, amp_trg,fs=fs,cutoff_freq_lower=cutoff_freq,cutoff_freq_upper=cutoff_freq_upper)
     
     # 重建信号
     fft_mixed = torch.polar(amp_src, pha_src_mutated)
+    # fft_mixed = torch.polar(amp_src_mutated, pha_src)
     mixed = torch.fft.irfft(fft_mixed, n=src.size(-1), dim=-1, norm='forward')
     
     return mixed.to(src_signal.dtype)

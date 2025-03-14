@@ -98,6 +98,8 @@ class Evaluator:
             # env\d_[in|out]
             env_name, inout = name.split("_")
             env_num = int(inout[3:])
+            # print(name)
+            # print(loader_kwargs)
 
             skip_eval = self.evalmode == "fast" and inout == "in" and env_num not in self.test_envs
             if skip_eval:

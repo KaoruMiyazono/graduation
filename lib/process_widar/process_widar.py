@@ -422,16 +422,31 @@ def get_csi_and_save_with_numpy(file_path, json_file):
             widar_data_single.read()
             csi = widar_data_single.get_scaled_csi()
 
-            amp = np.abs(csi[:, :, 0:3, :])  # shape [T,30,3,1]
-            phase = np.angle(csi[:, :, 0:3, :])  # shape [T,30,3,1]
-            record = np.concatenate((amp, phase), axis=-1)  # shape [T,30,3,2]
+            # amp = np.abs(csi[:, :, 0:3, :])  # shape [T,30,3,1]
+            # print(amp.shape)
+            # phase = np.angle(csi[:, :, 0:3, :])  # shape [T,30,3,1]
+            ref_antenna = np.expand_dims(np.conjugate(csi[:,:,2,:]),axis=2)
+            res_antenna = csi[:,:,0:2,:]  # when training discarding the reference antenna 1
+            csi_ratio = res_antenna*ref_antenna #shape [T,30,3,1] complex number
+            csi_ratio_amp = np.abs(csi_ratio)  #shape [T,30,3,1]
+            csi_ratio_pha = np.angle(csi_ratio)  #shape [T,30,3,1]
+            record = np.concatenate((csi_ratio_amp,csi_ratio_pha),axis=-1) #shape [T,30,3,4]
+            print(record.shape)
+            print(record[:,:,:,0]==csi_ratio_amp[:,:,:,0])
+            print(record[:,:,:,1]==csi_ratio_pha[:,:,:,0])
+            exit(0)
+            # record = np.concatenate((amp, phase), axis=-1)  # shape [T,30,3,2]
+            # print(record[:,:,:,0]==amp[:,:,:,0])
+            # exit(0)
 
             time_stamp = widar_data_single.timestamp_low
             record = resample(record, time_stamp, 2500)
             record = np.array(record)
+            # print(record.shape)
+            # exit(0)
 
             ans = extract_sample_info(line, json_file)
-            save_dir = "/home/zhengzhiyong/WiSR-main/data/widar/r6_noconj"
+            save_dir = "/home/zhengzhiyong/WiSR-main/data/Widar3/r6_conj"
             file_name = ans + ".npy"  # 目标 .npy 文件名
             save_path = os.path.join(save_dir, file_name)
 
@@ -486,6 +501,7 @@ if __name__ == "__main__":
     r2_files="/home/zhengzhiyong/WiSR-main/graduation/lib/process_widar/r2_files.txt"
     r6_files="/home/zhengzhiyong/WiSR-main/graduation/lib/process_widar/r6_files.txt"
     npy_r6_no_conj="/home/zhengzhiyong/WiSR-main/data/widar/r6_noconj"
+    npy_r6_conj="/home/zhengzhiyong/WiSR-main/data/Widar3/r6_conj"
     npy_r6="/home/zhengzhiyong/WiSR-main/data/widar/r6"
     # output_txt = "r2_files.txt"
     # find_r2_dat_files(root_directory, output_txt)
@@ -521,6 +537,6 @@ if __name__ == "__main__":
     # count_files_in_folder(npy_r6_no_conj)
     # count_files_by_user(npy_r6_no_conj)
     # count_files_by_user(npy_r6)
-    # count_files_by_conditions(npy_r6_no_conj,'room_1','loc_1','ori_1','3')
+    # count_files_by_conditions(npy_r6_conj,'room_3','loc_4','ori_2','3')
 
     

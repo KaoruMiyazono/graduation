@@ -6,16 +6,22 @@ import scipy.io as scio
 import zarr
 from pathlib import Path
 from scipy.ndimage import zoom
+import glob
 
 
 
 widar_gestures=["Push&Pull","Sweep","Clap","Slide","Draw-O(Horizontal)","Draw-Zigzag(Horizontal)"]
 
 
-def get_widar_csi(root_dir,domain_name):#room_1_user_3_loc_2_ori_3
+def get_widar_csi(root_dir,domain_name):#room_1_user_3_loc_2_ori_3 我的room_3_user_9_ges_Sweep_loc_5_ori_5_rx_r6_re_5.npy
     index=domain_name.split('_')
+    # print(root_dir)
+    # print(index)
+    # exit(0)
     if 'room' in index:
         roomid=index[index.index('room')+1]
+        # print(roomid)
+        # exit(0)
         room_ids=[roomid]
     else:
         roomid='1-3'
@@ -68,29 +74,62 @@ def get_widar_csi(root_dir,domain_name):#room_1_user_3_loc_2_ori_3
                     for loc in loc_ids:
                         for ori in ori_ids:
                             for rx in rx_ids:
-                                mat_file_name='room_'+room+'_user_'+user+'_ges_'+ges+'_loc_'+loc+'_ori_'+ori+'_rx_'+rx+'_csi.mat'
-                                mat_file=root_dir+'matfile/'+mat_file_name
+                                # mat_file_name='room_'+room+'_user_'+user+'_ges_'+ges+'_loc_'+loc+'_ori_'+ori+'_rx_'+rx+'_csi.mat'
+                                npy_file_name='room_'+room+'_user_'+user+'_ges_'+ges+'_loc_'+loc+'_ori_'+ori+'_rx_r'+rx+'.npy'
+                                # print(npy_file_name)
+                                pattern = f"room_{room}_user_{user}_ges_{ges}_loc_{loc}_ori_{ori}_rx_r{rx}_re_*.npy"
+                                matching_files = glob.glob(os.path.join(root_dir, pattern))
+                                # print(matching_files)
+                                for file_name in matching_files:
+                                    # print(i)
+                                    # npy_file=root_dir+file_name
+                                    data = np.load(file_name)
+                                    # print(data.shape)
+                                    # print(type(data))
+                                    amp,pha=data[:,:,:,0],data[:,:,:,1]
+                                    if amp.shape != (2500, 30, 2):
+                                        pad_width = ((0, 2500 - amp.shape[0]), (0, 0), (0, 0))
+                                        amp = np.pad(amp, pad_width, mode='constant')
+                                    if pha.shape != (2500, 30, 2):
+                                        pha = np.pad(pha, ((0, 2500 - pha.shape[0]), (0, 0), (0, 0)), mode='constant')
+                                    pha=np.unwrap(pha)
+                                    all_amp.append(amp)
+                                    all_pha.append(pha)
+                                    # print(file_name)
+                                    # print(ges_ids.index(ges))
+                                    all_label.append(ges_ids.index(ges))
+                                    # print(amp.shape)
+                # exit(0)
+                                # exit(0)
+                                # mat_file=root_dir+'matfile/'+mat_file_name
+                                # npy_file=root_dir+npy_file_name
                                 #room_1_user_1_ges_Clap_loc_1_ori_1_rx_1_csi.mat
-                                if os.path.isfile(mat_file):
-                                    mat= scio.loadmat(mat_file)
-                                    print('处理：',mat_file)
-                                    mat_datas=list(mat.values())[-1][0] 
-                                    for csi_data in mat_datas:
-                                        amp,pha=deal_CSI(csi_data,IFfilter=True, IFphasani=True,padding_length=2500)
-                                        all_amp.append(amp)
-                                        all_pha.append(pha)
-                                        all_label.append(ges_ids.index(ges))
-                                else:
-                                    raise ValueError('缺少mat:',mat_file)
-        all_amp=np.array(all_amp)
+                                # if os.path.isfile(mat_file):
+                                #     mat= scio.loadmat(mat_file)
+                                #     print('处理：',mat_file)
+                                #     mat_datas=list(mat.values())[-1][0] 
+                                #     for csi_data in mat_datas:
+                                #         amp,pha=deal_CSI(csi_data,IFfilter=True, IFphasani=True,padding_length=2500)
+                                #         all_amp.append(amp)
+                                #         all_pha.append(pha)
+                                #         all_label.append(ges_ids.index(ges))
+                                # else:
+                                #     raise ValueError('缺少mat:',mat_file)
+        # all_amp=np.array(all_amp)
+        try:
+            all_amp = np.array(all_amp)
+        except ValueError as e:
+            print(f"❌ all_amp 转换失败！错误信息: {e}")
+            print(f"⚠️ all_amp 内部真实形状: {[np.array(amp).shape for amp in all_amp]}")
+            raise  # 继续抛出异常
         all_pha=np.array(all_pha)
         all_label=np.array(all_label)
 
-        f=open(data_file,'wb')
-        pickle.dump(all_amp,f)
-        pickle.dump(all_pha,f)
-        pickle.dump(all_label,f)
-        f.close()
+        # f=open(data_file,'wb')
+        # pickle.dump(all_amp,f)
+        # pickle.dump(all_pha,f)
+        # pickle.dump(all_label,f)
+        # f.close()
     else:
         f=open(data_file,'rb')
         print('extracting:',data_file_name)
@@ -103,6 +142,14 @@ def get_widar_csi(root_dir,domain_name):#room_1_user_3_loc_2_ori_3
     all_user=np.array([userid]*all_amp.shape[0],dtype=int)
     all_loc=np.array([locid]*all_amp.shape[0],dtype=int)  
     all_ori=np.array([oriid]*all_amp.shape[0],dtype=int) 
+    # print(all_amp.shape)
+    N,T,sub,a=all_amp.shape
+    all_amp=all_amp.reshape(N,a,sub,T)
+    N,T,sub,a=all_pha.shape
+    all_pha=all_pha.reshape(N,a,sub,T)
+
+    # print(all_loc)
+    # exit(0)
     return all_amp,all_pha,all_label,all_room,all_user,all_loc,all_ori
 
 

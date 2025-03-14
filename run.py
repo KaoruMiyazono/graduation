@@ -28,10 +28,10 @@ def get_args():
     parser = argparse.ArgumentParser(description='Domain generalization')
     parser.add_argument('--data_dir', type=str,default="/home/zhengzhiyong/WiSR-main/data/")#"/mnt/ssd1/LiuSJ/")#
     parser.add_argument('--dataset', type=str, default='CSI')
-    parser.add_argument('--csidataset', type=str, default='ARIL')#'Widar3'#'CSIDA',#'ARIL'
+    parser.add_argument('--csidataset', type=str, default='Widar3')#'Widar3'#'CSIDA',#'ARIL'
     parser.add_argument('--algorithm', type=str, default="WiSR")
     parser.add_argument('--seed', type=int, default=0)
-    parser.add_argument('--steps', type=int, default=1000)
+    parser.add_argument('--steps', type=int, default=200)
     parser.add_argument('--checkpoint_freq', type=int, default=1 )
     parser.add_argument('--output_dir', type=str, default="./train_output/")
     parser.add_argument('--results_file', type=str, default="test_results_cuda1.txt")
@@ -47,16 +47,16 @@ def get_args():
 
 
     #这个是我加上的
-    # parser.add_argument("--FDA_hp", default=[(10,10),(10,50),(10,20),(10,30),(10,40),(10,60),(10,70),(10,80),(10,100),(10,200),(10,300),(10,400),(10,1000)], type=ast.literal_eval, help="test bandwith in FDA")
-    parser.add_argument("--FDA_hp", default=[(10,200),(10,300),(10,400),(30,100),(30,200),(30,300),(30,400),(50,100),(50,200),(50,300),(50,400),(70,100),(70,200),(70,300),(70,400),(90,100),
-                                             (90,200),(90,300),(90,400),(100,200),(100,300),(100,400),(200,300),(200,400),(200,500),(10,500),(30,500),(50,500),(70,500),(90,500),
-                                             (100,500),(300,500),(400,500),(300,400)], type=ast.literal_eval, help="test bandwith in FDA")
+    parser.add_argument("--FDA_hp", default=[(200,200),(200,500),(300,500),(50,300),(50,400),(50,400),(10,100),(10,200),(10,300),(10,400),(50,500),(80,200),(80,300),(80,400),(80,500)], type=ast.literal_eval, help="test bandwith in FDA")
+    # parser.add_argument("--FDA_hp", default=[(10,200),(10,300),(10,400),(30,100),(30,200),(30,300),(30,400),(50,100),(50,200),(50,300),(50,400),(70,100),(70,200),(70,300),(70,400),(90,100),
+    #                                          (90,200),(90,300),(90,400),(100,200),(100,300),(100,400),(200,300),(200,400),(200,500),(10,500),(30,500),(50,500),(70,500),(90,500),
+    #                                          (100,500),(300,500),(400,500),(300,400)], type=ast.literal_eval, help="test bandwith in FDA")
 
     args = parser.parse_known_args()
 
     return args
 
-def main(args,left_argv):
+def main(args,left_argv,cnt):
     os.makedirs(args.output_dir, exist_ok=True) #找到 打印log的文件夹
 
     # miro path setup
@@ -137,7 +137,7 @@ def main(args,left_argv):
         checkpoint_freq=checkpoint_freq,
         logger=logger,
     )
-    write_result_to_txt(args,results)
+    write_result_to_txt(args,results,cnt)
     return results[2]
 
 
@@ -173,6 +173,13 @@ if __name__ == "__main__":
     
         
     dataset_domain_list=get_domains(args.csidataset,domain_type,ibegin,imax,rxs=None)
+    # print(dataset_domain_list['Widar3'])
+    # for dict_me in dataset_domain_list['Widar3']:
+    #     # print(type(i))
+    #     for k,v in dict_me.items():
+    #         print(k,v)    
+
+    # exit(0)
     
     for idx, (low, high) in enumerate(args.FDA_hp):
         print(f"Range {idx}: ({low}, {high})")
@@ -183,7 +190,7 @@ if __name__ == "__main__":
             args.source_domains=dataset_domain_list[args.csidataset][i]['source_domains']
             args.target_domains=dataset_domain_list[args.csidataset][i]['target_domains']
 
-            acc_all=acc_all+main(args,left_argv)
+            acc_all=acc_all+main(args,left_argv,cnt)
             cnt=cnt+1
         with open("output_linear_cuda1.txt", "a") as f:
             f.write(f"Range {idx}: ({low}, {high})\n")  # 写入当前的low和high

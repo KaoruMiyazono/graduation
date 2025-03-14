@@ -7,6 +7,8 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 from scipy.signal import stft
 import torch
+import scipy.signal as signal
+
 def plot_amplitude_over_time(amplitude_data, antenna, subcarrier, save_path="/home/zhengzhiyong/WiSR-main/graduation/picture/amplitude_plot_800.png"):
     """
     绘制固定天线和子载波，振幅随时间变化的图，并将图保存到当前目录。
@@ -18,7 +20,9 @@ def plot_amplitude_over_time(amplitude_data, antenna, subcarrier, save_path="/ho
     save_path: 保存图像的路径（默认保存为当前目录中的 amplitude_plot.png）
     """
     # 提取指定天线和子载波的振幅数据
-    time = np.arange(1800)  # 时间轴（单位：ms）
+    # time = np.arange(1800)  # 时间轴（单位：ms）
+    time = np.arange(2500)  # 时间轴（单位：ms）
+    print(amplitude_data.shape)
     amplitude = amplitude_data[antenna, subcarrier, :]  # 获取固定天线和子载波的振幅
 
     # 绘制图形
@@ -77,6 +81,14 @@ def read_csi_sample(index):
     # pha=np.angle(Z)
     return amp,pha,pha
 
+
+def read_csi_sample_widar():
+    root_dir_amp='/home/zhengzhiyong/WiSR-main/data/Widar3/r6_conj/room_1_user_1_ges_Clap_loc_1_ori_1_rx_r6_re_1.npy'
+    data = np.load(root_dir_amp)
+    amp,pha=data[:,:,:,0],data[:,:,:,1]
+    return amp,pha
+
+
 def read_csi_sample_aril(root_dir,index):
     train_amp_data= scio.loadmat(root_dir+"train_data_split_amp.mat")
     train_amp=train_amp_data['train_data']
@@ -91,7 +103,7 @@ def read_csi_sample_aril(root_dir,index):
 
 def fourier_transform(signal,fs=1000):
     t=signal.shape[-1]
-    fft_signal = torch.fft.rfft(torch.from_numpy(signal), dim=-1, norm='forward')
+    fft_signal = torch.fft.rfft(torch.tensor(signal), dim=-1, norm='forward')
     print(fft_signal.shape)
 
     return fft_signal
@@ -284,13 +296,16 @@ def plot_amplitude_spectrum(fft_signal, fs=1000,csiindex=400, save_dir="/home/zh
     plt.close()  # 关闭图像，释放内存
     print(f"Amplitude spectrum saved to {save_path}")
 
-def plot_phase_spectrum(fft_signal, fs=1000,csiindex=900, save_dir="/home/zhengzhiyong/WiSR-main/graduation/picture"):
+def plot_amp_spectrum(fft_signal, fs=1000,csiindex=900, save_dir="/home/zhengzhiyong/WiSR-main/graduation/picture",dataset="CSIDA"):
     # 计算频率轴
     n = fft_signal.shape[-1]
-    freqs = torch.fft.rfftfreq(1800, d=1/fs)
+    if dataset=="CSIDA":
+        freqs =torch.fft.rfftfreq(1800, d=1/fs)
+    else:
+        freqs=torch.fft.rfftfreq(2500, d=1/fs)
 
     # 计算相位
-    phase=fft_signal[0,0,:]
+    phase=fft_signal[0,10,:]
     # phase = torch.angle(fft_signal[0,0,:])
     # print(phase.shape)
     # print(freqs.shape)
@@ -304,19 +319,19 @@ def plot_phase_spectrum(fft_signal, fs=1000,csiindex=900, save_dir="/home/zhengz
     plt.grid(False)
 
     # 保存图像
-    save_path = f"{save_dir}/phase_spectrum{csiindex}.png"
-    plt.savefig(save_path)
+    save_path = f"{save_dir}"
+    plt.savefig(save_dir)
     plt.close()  # 关闭图像，释放内存
-    print(f"Phase spectrum saved to {save_path}")
+    print(f"Phase spectrum saved to {save_dir}")
 
 
 def plot_phase_spectrum_aril(fft_signal, fs=1000,csiindex=400, save_dir="/home/zhengzhiyong/WiSR-main/graduation/picture"):
     # 计算频率轴
     n = fft_signal.shape[-1]
-    freqs = torch.fft.rfftfreq(192, d=1/fs)
+    freqs = torch.fft.rfftfreq(2500, d=1/fs)
 
     # 计算相位
-    phase=fft_signal[29,:]
+    phase=fft_signal[0,10,:]
     # phase = torch.angle(fft_signal[0,0,:])
     # print(phase.shape)
     # print(freqs.shape)
@@ -330,7 +345,7 @@ def plot_phase_spectrum_aril(fft_signal, fs=1000,csiindex=400, save_dir="/home/z
     plt.grid(False)
 
     # 保存图像
-    save_path = f"{save_dir}/phase_spectrum_aril{csiindex}.png"
+    save_path = f"{save_path}"
     plt.savefig(save_path)
     plt.close()  # 关闭图像，释放内存
     print(f"Phase spectrum saved to {save_path}")
@@ -361,46 +376,109 @@ def FDA_1d_with_fs(src_signal, trg_signal, fs=1000, cutoff_freq=60,cutoff_freq_u
     pha_src_mutated=bandwidth_freq_mutate_1d_with_fs(src, trg,fs=fs,cutoff_freq_lower=cutoff_freq,cutoff_freq_upper=cutoff_freq_upper)
     return pha_src_mutated
 
+def low_pass_filter_fft(x, fs=1000, cutoff_hz=50):
+    """
+    用 FFT 进行低通滤波
+    x: (a, c, T) 的输入张量
+    fs: 采样率 (Hz)
+    cutoff_hz: 截止频率 (Hz)
+    """
+    a, c, T = x.shape
+    X_freq = torch.fft.rfft(x, dim=-1)  # 计算 FFT（仅正频率部分）
 
-root_dir_aril="/home/zhengzhiyong/WiSR-main/data/ARIL/"
-amp_400,pha_400,_=read_csi_sample(400)
+    # 计算频率索引
+    cutoff_idx = int((cutoff_hz / fs) * (T // 2))  # 频率转换为索引
+    freq_mask = torch.zeros_like(X_freq)
+    freq_mask[..., :cutoff_idx] = 1  # 低频通过，高频屏蔽
+
+    X_filtered = X_freq * freq_mask  # 频域滤波
+    x_smooth = torch.fft.irfft(X_filtered, n=T, dim=-1)  # 逆 FFT 变回时域
+    return x_smooth
+
+def low_pass_filter_fir(x, fs=1000, cutoff_hz=50, num_taps=1):
+    """
+    用 FIR 滤波器进行低通滤波
+    x: (a, c, T) 的输入张量
+    fs: 采样率 (Hz)
+    cutoff_hz: 截止频率 (Hz)
+    num_taps: FIR 滤波器的阶数（决定平滑程度）
+    """
+    a, c, T = x.shape
+
+    # 生成 FIR 滤波器系数
+    fir_coeffs = signal.firwin(num_taps, cutoff_hz, fs=fs)
+
+    # 转换为 PyTorch 张量
+    fir_coeffs_torch = torch.tensor(fir_coeffs, dtype=x.dtype, device=x.device)
+
+    # 对每个通道进行滤波
+    x_smooth = torch.zeros_like(x)
+    for i in range(a):
+        for j in range(c):
+            x_smooth[i, j, :] = torch.conv1d(
+                x[i, j, :].unsqueeze(0).unsqueeze(0),  # 添加 batch 维度和通道维度
+                fir_coeffs_torch.view(1, 1, -1),      # 过滤器形状 (out_channels, in_channels, kernel_size)
+                padding="same"
+            ).squeeze(0).squeeze(0)  # 去掉 batch 维度和通道维度
+
+    return x_smooth
+
+root_dir_aril="/home/zhengzhiyong/WiSR-main/data/Widar3/"
+# amp_400,pha_400,_=read_csi_sample(400)
+amp_400,pha_400=read_csi_sample_widar()
 # amp_500,pha_500,_=read_csi_sample(500)
 
 # amp_400,pha_400=read_csi_sample_aril(root_dir_aril,400)
+
 print(amp_400.shape)
 print(pha_400.shape)
+# exit(0)
 # amp_400_fft=fourier_transform(amp_400)
 # pha_amp_400_fft=torch.angle(amp_400_fft)
 # print(amp_400_fft)
 # plot_phase_spectrum_aril(pha_amp_400_fft,1000,800)
 # amp_500_fft=fourier_transform(pha_500)
-t,a,c,=pha_400.shape
-pha_400=pha_400.reshape(a,c,t)
-print(pha_400.shape)
-plot_amplitude_over_time(pha_400,0,100)
-
-
-exit(0)
-t,a,c,=amp_400.shape
+t,c,a,=pha_400.shape
 amp_400=amp_400.reshape(a,c,t)
-amp_500=amp_500.reshape(a,c,t)
+pha_400=pha_400.reshape(a,c,t)
+# pha_400=np.unwrap(pha_400)
+# pha_400=low_pass_filter_fft(torch.tensor(pha_400), fs=1000, cutoff_hz=50)
+pha_400=low_pass_filter_fir(torch.tensor(pha_400), fs=1000, cutoff_hz=50)
+pha_400=np.unwrap(pha_400)
+print(pha_400.shape)
+# plot_amplitude_over_time(amp_400,0,10,save_path="/home/zhengzhiyong/WiSR-main/graduation/picture/amplitude_plot_csida_400.png")
+plot_amplitude_over_time(pha_400,0,10,save_path="/home/zhengzhiyong/WiSR-main/graduation/picture/pha_Widar_FIR.png")
 
-amp_400_fft=fourier_transform(amp_400)
-amp_500_fft=fourier_transform(amp_500)
 
-amp_400_mix_500=FDA_1d_with_fs(torch.angle(amp_400_fft),torch.angle(amp_500_fft))
+# exit(0)
+
+# print(pha_400.shape)
+# amp_400_fft=fourier_transform(amp_400)
+pha_400_fft=fourier_transform(pha_400)
+
+# plot_amp_spectrum(torch.abs(amp_400_fft),1000,900,"/home/zhengzhiyong/WiSR-main/graduation/picture/amp_csida_fft_amp")
+plot_amp_spectrum(torch.abs(pha_400_fft),1000,900,"/home/zhengzhiyong/WiSR-main/graduation/picture/pha_Widar_fft_amp_2025-3-14",dataset="Widar")
+
+# plot_amp_spectrum(torch.angle(amp_400_fft),1000,900,"/home/zhengzhiyong/WiSR-main/graduation/picture/amp_csida_fft_pha") #第一个是原来 第二个是fft之后
+plot_amp_spectrum(torch.angle(pha_400_fft),1000,900,"/home/zhengzhiyong/WiSR-main/graduation/picture/pha_Widar_fft_pha__2025-3-14",dataset="Widar")
 
 
 
-plot_phase_spectrum(amp_400_mix_500,1000,900)
-amp_end=torch.polar(torch.abs(amp_400_fft),amp_400_mix_500)
-mixed = torch.fft.irfft(amp_end,n=1800, dim=-1, norm='forward')
+
+
+# amp_400_mix_500=FDA_1d_with_fs(torch.angle(amp_400_fft),torch.angle(amp_500_fft))
+
+
+
+# plot_phase_spectrum(amp_400_mix_500,1000,900)
+# amp_end=torch.polar(torch.abs(amp_400_fft),amp_400_mix_500)
+# mixed = torch.fft.irfft(amp_end,n=1800, dim=-1, norm='forward')
 # print(mixed.shape)
 # print(mixed[0,0,:]==amp_400[0,0,:])
 # print(mixed)
 # print(amp_400)
 
-plot_amplitude_over_time(mixed,1,0,)
+# plot_amplitude_over_time(mixed,1,0,)
 
 
 

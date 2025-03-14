@@ -34,7 +34,8 @@ class CSIIterDataset(torch.utils.data.IterableDataset):
     def get_csidataset(self, args,domain):
         dataset_dir=args.data_dir+args.csidataset
         if args.csidataset=='Widar3':
-            dataset_dir=dataset_dir+"/CSI/"
+            # /home/zhengzhiyong/WiSR-main/data/widar/r6_noconj
+            dataset_dir=dataset_dir+"/r6_conj/"
             amp,pha,labels,roomid,userid,locid,oriid=get_widar_csi(dataset_dir,domain) #(n, 3, 30, 2500)
         elif args.csidataset=='CSIDA': 
             dataset_dir=dataset_dir+"/CSI_301" #这个是我改的
@@ -56,6 +57,8 @@ class CSIIterDataset(torch.utils.data.IterableDataset):
         else:
             raise ValueError('wrong type')
         # data=data.reshape(data.shape[0],data.shape[1]*data.shape[2],data.shape[3]) #(n, 180, 2500)
+        # print(data.shape)
+        # exit(0)
 
         return data,labels
     def __iter__(self):

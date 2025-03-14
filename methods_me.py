@@ -81,7 +81,10 @@ class Baseline(Algorithm):
         if args.high==1000:
             args.high=None
 
-        all_x_src_to_tar=FDA_1d_with_fs(all_x,all_x_test,fs=1000,cutoff_freq=args.low,cutoff_freq_upper=args.high)
+        if args.high!=args.low:
+            all_x_src_to_tar=FDA_1d_with_fs(all_x,all_x_test,fs=1000,cutoff_freq=args.low,cutoff_freq_upper=args.high)
+        else:
+            all_x_src_to_tar=all_x
         # s_t_a1,s_t_a2,s_t_a3=self.decomse(all_x_src_to_tar)
         # all_d = torch.cat([
         #     torch.full((x.shape[0],), i, dtype=torch.int64, device="cuda")
@@ -242,7 +245,10 @@ class Baseline_with_arc(Algorithm):
         if args.high==1000:
             args.high=None
         
-        all_x_src_to_tar=FDA_1d_with_fs(all_x,all_x_test,fs=1000,cutoff_freq=args.low,cutoff_freq_upper=args.high)
+        if args.low==args.high:
+            all_x_src_to_tar=FDA_1d_with_fs(all_x,all_x_test,fs=1000,cutoff_freq=args.low,cutoff_freq_upper=args.high)
+        else:
+            all_x_src_to_tar=all_x
         s_t_a1,s_t_a2,s_t_a3=self.decomse(all_x_src_to_tar)
         # s_t_a1,s_t_a2,s_t_a3=self.decomse(all_x)
         # print(s_t_a1.shape)
