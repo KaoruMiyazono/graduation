@@ -256,16 +256,18 @@ def get_ARIL_csi(root_dir,domain_name): #train_loc_ test_loc_
     
     amp=np.concatenate((train_amp,test_amp),axis=0)
     # print(amp.shape)
-    # amp=np.pad(amp,((0,0),(0,0),(0,384-192)),mode='constant', constant_values=0)
-    scale_factor = 2
+    # exit(0)
     # print(amp.shape)
-    amp = zoom(amp, (1, 1, scale_factor), order=3)
+    # amp=np.pad(amp,((0,0),(0,0),(0,384-192)),mode='constant', constant_values=0)
+    # scale_factor = 2
+    # print(amp.shape)
+    # amp = zoom(amp, (1, 1, scale_factor), order=3)
     # print(amp.shape)
     # print(amp[0,0,:])
     # exit(0)
     pha=np.concatenate((train_pha,test_pha),axis=0)
     # pha=np.pad(pha,((0,0),(0,0),(0,384-192)),mode='constant', constant_values=0)
-    pha = zoom(pha, (1, 1, scale_factor), order=3)
+    # pha = zoom(pha, (1, 1, scale_factor), order=3)
     label=np.concatenate((train_label,test_label),axis=0)
     locids=np.concatenate((train_locids,test_locids),axis=0)
     label=np.squeeze(label) 

@@ -17,6 +17,7 @@ from lib.fast_data_loader import InfiniteDataLoader, FastDataLoader
 from torch.utils.data import DataLoader, ConcatDataset
 
 
+
 def infinite_dataloader(dataloader):
     while True:
         for batch in dataloader:
@@ -141,12 +142,12 @@ def train(target_env, args, hparams, n_steps, checkpoint_freq, logger):
     #     hparams,
     # )
 
-    algorithm = Baseline(
-        dataset.input_shape,
-        dataset.num_classes,
-        len(train_dataset),
-        hparams,
-    )
+    # algorithm = Baseline(
+    #     dataset.input_shape,
+    #     dataset.num_classes,
+    #     len(train_dataset),
+    #     hparams,
+    # )
 
     # algorithm = Baseline_two_attn(
     #     dataset.input_shape,
@@ -155,12 +156,12 @@ def train(target_env, args, hparams, n_steps, checkpoint_freq, logger):
     #     hparams,
     # )
 
-    # algorithm = Baseline_with_arc(
-    #     dataset.input_shape,
-    #     dataset.num_classes,
-    #     len(train_dataset),
-    #     hparams,
-    # )
+    algorithm = Baseline_with_arc(
+        dataset.input_shape,
+        dataset.num_classes,
+        len(train_dataset),
+        hparams,
+    )
 
     # algorithm = Baseline_with_arc_concat(
     #     dataset.input_shape,

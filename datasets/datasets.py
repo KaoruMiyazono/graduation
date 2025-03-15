@@ -44,8 +44,8 @@ class CSIIterDataset(torch.utils.data.IterableDataset):
         elif args.csidataset=='ARIL': #'Widar3/CSI/'   
             dataset_dir=dataset_dir+"/"
             amp,pha,labels,roomid,userid,locid,oriid=get_ARIL_csi(dataset_dir,domain)#(n, 52,192)
-            amp=amp.reshape(amp.shape[0],1,amp.shape[1],amp.shape[2])
-            pha=pha.reshape(pha.shape[0],1,pha.shape[1],pha.shape[2])
+            amp=amp.reshape(amp.shape[0],amp.shape[1],amp.shape[2])
+            pha=pha.reshape(pha.shape[0],pha.shape[1],pha.shape[2])
 
         input_datatype=args.data_type
         if input_datatype=='amp':

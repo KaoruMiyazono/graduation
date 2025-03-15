@@ -8,7 +8,7 @@ dataset_csi_size={
             'Widar3':{
                 'amp':(90, 2500),
                 'pha':(90, 2500),
-                'amp+pha':(60, 2500),
+                'amp+pha':(120, 2500),
                 'img':(225,225),
                 },
             'CSIDA':{
@@ -20,7 +20,7 @@ dataset_csi_size={
             'ARIL':{
                 'amp':(52, 192),
                 'pha':(52, 192),
-                'amp+pha':(104, 384),
+                'amp+pha':(104, 192),
                 'img':(52,52),
                 },
             'CSI-Finger':{

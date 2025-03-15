@@ -4,7 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from optimizers import get_optimizer
 from backbones import networks
-from FDA_1d import FDA_1d_with_fs
+from FDA_1d import FDA_1d_with_fs,WADA_CWT
 import torch.nn.functional as F
 
 
@@ -240,13 +240,18 @@ class Baseline_with_arc(Algorithm):
         all_x=minibatches[0]
         # all_y = torch.cat([y for x, y in minibatches])
         all_y=minibatches[1]
-        
+        print(all_x_test.shape)
 
         if args.high==1000:
             args.high=None
         
-        if args.low==args.high:
-            all_x_src_to_tar=FDA_1d_with_fs(all_x,all_x_test,fs=1000,cutoff_freq=args.low,cutoff_freq_upper=args.high)
+        if args.low!=args.high:
+            # all_x_src_to_tar=FDA_1d_with_fs(all_x,all_x_test,fs=1000,cutoff_freq=args.low,cutoff_freq_upper=args.high)
+            print("我到了")
+            all_x_src_to_tar=WADA_CWT(all_x,all_x_test,low=args.low,high=args.high)
+            print("我到了")
+            exit(0)
+            
         else:
             all_x_src_to_tar=all_x
         s_t_a1,s_t_a2,s_t_a3=self.decomse(all_x_src_to_tar)

@@ -434,7 +434,7 @@ def get_csi_and_save_with_numpy(file_path, json_file):
             print(record.shape)
             print(record[:,:,:,0]==csi_ratio_amp[:,:,:,0])
             print(record[:,:,:,1]==csi_ratio_pha[:,:,:,0])
-            exit(0)
+            # exit(0)
             # record = np.concatenate((amp, phase), axis=-1)  # shape [T,30,3,2]
             # print(record[:,:,:,0]==amp[:,:,:,0])
             # exit(0)

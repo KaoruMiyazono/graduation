@@ -8,6 +8,37 @@ import matplotlib.pyplot as plt
 from scipy.signal import stft
 import torch
 import scipy.signal as signal
+import pywt
+
+
+def visualize_wavelet_transform(signal, save_path, antenna_idx=0, subcarrier_idx=0):
+    """
+    可视化小波变换后的时频图
+    - signal: 形状 (2, 30, 64, 2500)，分别是 (天线, 子载波, 尺度, 时间步)
+    - save_path: 保存图片的路径
+    - antenna_idx: 选择的天线索引
+    - subcarrier_idx: 选择的子载波索引
+    """
+    # 选定天线 & 子载波
+    selected_signal = signal[antenna_idx, subcarrier_idx]  # (64, 2500)
+    
+    # 创建时间 & 频率轴
+    time = np.arange(selected_signal.shape[1])  # 2500 个时间点
+    scales = np.arange(1, selected_signal.shape[0] + 1)  # 64 个尺度
+    
+    # 绘制时频图
+    plt.figure(figsize=(10, 6))
+    plt.imshow(selected_signal, aspect='auto', cmap='jet', origin='lower', 
+               extent=[time.min(), time.max(), scales.min(), scales.max()])
+    
+    plt.colorbar(label="Amplitude")
+    plt.xlabel("Time (samples)")
+    plt.ylabel("Scale (higher = lower frequency)")
+    plt.title(f"Antenna {antenna_idx}, Subcarrier {subcarrier_idx} - Wavelet Transform")
+    
+    # 保存图片
+    plt.savefig(save_path, dpi=300)
+    plt.close()
 
 def plot_amplitude_over_time(amplitude_data, antenna, subcarrier, save_path="/home/zhengzhiyong/WiSR-main/graduation/picture/amplitude_plot_800.png"):
     """
@@ -107,8 +138,30 @@ def fourier_transform(signal,fs=1000):
     print(fft_signal.shape)
 
     return fft_signal
+def wavelet_transform(signal, wavelet='morl', scales=64):
+    """
+    用 PyWavelets 进行小波变换 (CWT)
 
+    参数：
+    - signal: (a, c, t) 形状的输入信号 (PyTorch Tensor)
+    - wavelet: 选择的小波基（默认 'morl'）
+    - scales: 小波变换的尺度数
 
+    返回：
+    - cwt_coeffs: (a, c, scales, t) 小波变换后的结果
+    """
+    a, c, t = signal.shape
+    scales = torch.arange(1, scales + 1).float()  # 小波尺度
+    cwt_coeffs_list = []
+
+    for i in range(a):
+        for j in range(c):
+            x_np = signal[i, j].cpu().numpy()  # 转 NumPy
+            coeffs, _ = pywt.cwt(x_np, scales.cpu().numpy(), wavelet)  # CWT
+            cwt_coeffs_list.append(torch.tensor(coeffs))  # 转回 PyTorch
+
+    cwt_coeffs = torch.stack(cwt_coeffs_list).reshape(a, c, scales.shape[0], t)
+    return cwt_coeffs
 
 
 def compute_stft(amplitude_data, nperseg=256):
@@ -395,7 +448,7 @@ def low_pass_filter_fft(x, fs=1000, cutoff_hz=50):
     x_smooth = torch.fft.irfft(X_filtered, n=T, dim=-1)  # 逆 FFT 变回时域
     return x_smooth
 
-def low_pass_filter_fir(x, fs=1000, cutoff_hz=50, num_taps=1):
+def low_pass_filter_fir(x, fs=1000, cutoff_hz=50, num_taps=30):
     """
     用 FIR 滤波器进行低通滤波
     x: (a, c, T) 的输入张量
@@ -443,8 +496,8 @@ amp_400=amp_400.reshape(a,c,t)
 pha_400=pha_400.reshape(a,c,t)
 # pha_400=np.unwrap(pha_400)
 # pha_400=low_pass_filter_fft(torch.tensor(pha_400), fs=1000, cutoff_hz=50)
-pha_400=low_pass_filter_fir(torch.tensor(pha_400), fs=1000, cutoff_hz=50)
-pha_400=np.unwrap(pha_400)
+# pha_400=low_pass_filter_fir(torch.tensor(pha_400), fs=1000, cutoff_hz=50)
+# pha_400=np.unwrap(pha_400)
 print(pha_400.shape)
 # plot_amplitude_over_time(amp_400,0,10,save_path="/home/zhengzhiyong/WiSR-main/graduation/picture/amplitude_plot_csida_400.png")
 plot_amplitude_over_time(pha_400,0,10,save_path="/home/zhengzhiyong/WiSR-main/graduation/picture/pha_Widar_FIR.png")
@@ -454,7 +507,13 @@ plot_amplitude_over_time(pha_400,0,10,save_path="/home/zhengzhiyong/WiSR-main/gr
 
 # print(pha_400.shape)
 # amp_400_fft=fourier_transform(amp_400)
-pha_400_fft=fourier_transform(pha_400)
+# pha_400_fft=fourier_transform(pha_400)
+pha_400_wat=wavelet_transform(torch.tensor(pha_400))
+print((pha_400_wat.shape))
+print(pha_400_wat)
+visualize_wavelet_transform(torch.abs(pha_400_wat),"/home/zhengzhiyong/WiSR-main/graduation/picture/pha_Widar_wat_2025-3-14",0,27)
+print(pha_400_wat)
+exit(0)
 
 # plot_amp_spectrum(torch.abs(amp_400_fft),1000,900,"/home/zhengzhiyong/WiSR-main/graduation/picture/amp_csida_fft_amp")
 plot_amp_spectrum(torch.abs(pha_400_fft),1000,900,"/home/zhengzhiyong/WiSR-main/graduation/picture/pha_Widar_fft_amp_2025-3-14",dataset="Widar")
